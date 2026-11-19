@@ -24,12 +24,26 @@ traceable path back to the original source.
 
 ![Po, the companion editor](docs/assets/po.png)
 
-Po is Muse Radar's original companion IP: a round honey-gold dragon with a
-coral heart antenna, softly fluttering wings, and a wagging tail. Its visual
-temperament borrows the round, approachable warmth of Nailong and the
-"antenna companion" feeling of Teletubbies Po, without copying either character.
-The avatar is scalable SVG, blinks, floats, sways its antenna, wags its tail,
-and adapts to both Oat and Dusk themes.
+Po uses the IP artwork supplied for this project: a tangerine plush body,
+cream face and belly, coral inner ears and feet, and a small leaf on top. The
+round silhouette and minimal dot eyes carry Nailong's Q-version softness, while
+the companion-like warmth echoes the spirit of Teletubbies Po. Face crops are
+used in the status pill and story rows; the full-body illustration appears on
+the dashboard and in briefs, animated with breathing, floating, and soft
+shadows.
+
+### Soft Plush Citrus
+
+- **Oatmilk `#F7F1E8`**: canvas and breathing room.
+- **Tangerine `#F19A4B`**: Po, primary emphasis, and key CTAs.
+- **Cream `#F8E8CA`**: face, belly, cards, and reading surfaces.
+- **Coral `#D96849`**: feet, links, alerts, and scores.
+- **Leaf `#8A9A4B`**: source health, community signal, and secondary states.
+
+Motion is limited to four patterns: a 6-second character breath, a 6.5-second
+float, a 210ms status reveal, and a 320ms card rise. No blue-purple gradients,
+heavy glows, or large saturated fields. The interface stays tool-like while
+keeping the warmth of a plush collectible.
 
 ## Why This Exists
 

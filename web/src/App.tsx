@@ -138,7 +138,7 @@ function App() {
             <span>{t("每 2 小时轻轻扫描一次", "A gentle scan every 2h")}</span>
           </div>
           <button className="rail-theme" onClick={() => setDusk(!dusk)}>
-            {dusk ? "☼" : "◐"} {dusk ? t("燕麦色", "Oat") : t("暮色", "Dusk")}
+            {dusk ? "☼" : "◐"} {dusk ? t("奶油柑橘", "Cream citrus") : t("暖夜", "Warm night")}
           </button>
         </div>
       </aside>
@@ -354,8 +354,6 @@ function Today(props: {
           )}
         </div>
         <div className="hero-avatar-panel">
-          <div className="avatar-orbit orbit-one" />
-          <div className="avatar-orbit orbit-two" />
           <PoAvatar size="xl" />
           <div className="avatar-caption">
             <span className="soft-dot" />
@@ -369,7 +367,7 @@ function Today(props: {
         <MetricCard label={t("今日信号", "Signals today")} value={feed.total_items} accent="peach" glyph="◉" />
         <MetricCard label={t("值得提醒", "Worth a nudge")} value={items.filter((story) => story.score >= 90).length} accent="butter" glyph="✦" />
         <MetricCard label={t("社区回声", "Community echoes")} value={communityCount} accent="sage" glyph="⌁" />
-        <MetricCard label={t("最近采集", "Last collect")} value={feed.run.fetched || "—"} accent="lilac" glyph="↻" />
+        <MetricCard label={t("最近采集", "Last collect")} value={feed.run.fetched || "—"} accent="citrus" glyph="↻" />
       </section>
 
       <section className="ideas-section">
@@ -388,7 +386,7 @@ function Today(props: {
             <p>{action?.why_now ?? t("行动建议会在下一次 digest 后出现。", "The action plan appears after the next digest.")}</p>
             {latestBrief && <button className="text-button" onClick={() => openBrief(latestBrief)}>{t("看看为什么", "See why")} →</button>}
           </div>
-          <div className="idea-card idea-lilac">
+          <div className="idea-card idea-citrus">
             <span className="idea-icon">◌</span>
             <span className="eyebrow">{t("社区温度", "COMMUNITY WEATHER")}</span>
             <h3>{communityCount} {t("条讨论正在发热", "conversations are warm")}</h3>
@@ -773,13 +771,13 @@ function About({ lang, t }: { lang: Lang; t: (zh: string, en: string) => string 
         <div>
           <span className="eyebrow">{t("关于 Po 与 Muse Radar", "ABOUT PO & MUSE RADAR")}</span>
           <h1>{t("工具有可靠性，也可以有体温。", "A tool can be reliable and warm.")}</h1>
-          <p>{t("Po 是 Muse Radar 的陪伴式主编：圆润暖黄的小龙身体、珊瑚色天线和一对会扇动的小翅膀。界面借鉴 Muse 的视觉哲学：稳定原语、温和材质、拟人化陪伴和生成式表达。它不隐藏判断，也不假装自己是人。", "Po is Muse Radar's companion editor: a round honey-gold dragon with a coral antenna and softly fluttering wings. The interface borrows Muse's visual philosophy: stable primitives, warm materials, embodied companionship and generative expression. It does not hide judgment or pretend to be human.")}</p>
+          <p>{t("Po 是 Muse Radar 的陪伴式主编：柑橘橙的绒毛身体、奶油色脸和肚皮、珊瑚色耳内与脚掌，头顶还有一片叶子。界面借鉴 Muse 的视觉哲学：稳定原语、温和材质、拟人化陪伴和生成式表达。它不隐藏判断，也不假装自己是人。", "Po is Muse Radar's companion editor: a tangerine plush body, cream face and belly, coral inner ears and feet, and a small leaf on top. The interface borrows Muse's visual philosophy: stable primitives, warm materials, embodied companionship and generative expression. It does not hide judgment or pretend to be human.")}</p>
         </div>
         <PoAvatar size="xl" />
       </section>
       <div className="primitive-grid">
         {[
-          ["01", t("陪伴式头像", "Embodied avatar"), t("Po 不是抽象 Logo，而是一个会眨眼、会陪伴的角色。", "Po is not an abstract logo, but a character that blinks and keeps you company.")],
+          ["01", t("陪伴式头像", "Embodied avatar"), t("Po 不是抽象 Logo，而是一个会呼吸、会轻轻漂浮的绒毛角色。", "Po is not an abstract logo, but a plush character that breathes and gently floats.")],
           ["02", t("状态胶囊", "Status pill"), t("把扫描、评分、简报状态放在一个可展开的温和入口里。", "A gentle, expandable home for scan, score and brief status.")],
           ["03", t("灵感表面", "Ideas surface"), t("把信号转成三个可以带走的小线索。", "Turn signals into three small ideas you can take with you.")],
           ["04", t("生成式空间", "Spaces"), t("导航不是层级菜单，而是一组可停留的情报空间。", "Navigation is a set of rooms, not a deep menu tree.")],
@@ -791,6 +789,43 @@ function About({ lang, t }: { lang: Lang; t: (zh: string, en: string) => string 
           </div>
         ))}
       </div>
+      <section className="design-language">
+        <SectionHead
+          kicker={t("设计语言", "DESIGN LANGUAGE")}
+          title={t("软绒柑橘：从 Po 延展出的五色系统", "Soft Plush Citrus: a five-color system derived from Po")}
+        />
+        <div className="palette-grid">
+          {[
+            [t("奶油燕麦", "Oatmilk"), "#F7F1E8"],
+            [t("柑橘橙", "Tangerine"), "#F19A4B"],
+            [t("奶油脸", "Cream"), "#F8E8CA"],
+            [t("珊瑚红", "Coral"), "#D96849"],
+            [t("叶片绿", "Leaf"), "#8A9A4B"],
+          ].map(([name, color]) => (
+            <div className="palette-swatch" key={color}>
+              <span className="swatch-color" style={{ background: color }} />
+              <div>
+                <strong>{name}</strong>
+                <small>{color}</small>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="motion-grid">
+          {[
+            ["01", t("呼吸", "Breathe"), t("6s 轻微起伏", "6s, subtle scale")],
+            ["02", t("漂浮", "Float"), t("6.5s 上下 4px", "6.5s, 4px drift")],
+            ["03", t("状态展开", "Status reveal"), t("210ms 轻快展开", "210ms, gentle reveal")],
+            ["04", t("卡片进入", "Card rise"), t("320ms 柔和不弹跳", "320ms, soft rise")],
+          ].map(([number, title, description]) => (
+            <div className="motion-note" key={number}>
+              <span>{number}</span>
+              <strong>{title}</strong>
+              <small>{description}</small>
+            </div>
+          ))}
+        </div>
+      </section>
       <div className="method-grid">
         <div className="method-card">
           <span className="eyebrow">{t("编辑规则", "EDITORIAL RULES")}</span>
