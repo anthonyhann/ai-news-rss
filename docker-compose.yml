@@ -1,0 +1,13 @@
+services:
+  ainews:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+      - ./web/public/data:/app/web/public/data
+    environment:
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-}

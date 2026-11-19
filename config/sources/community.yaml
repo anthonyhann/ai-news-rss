@@ -1,0 +1,146 @@
+sources:
+  - id: hacker-news
+    kind: hackernews
+    name: Hacker News
+    tier: 3
+    lang: en
+    category: community
+    max_items: 30
+  - id: reddit-localllama
+    kind: reddit
+    name: r/LocalLLaMA
+    subreddit: LocalLLaMA
+    tier: 3
+    lang: en
+    category: community
+    max_items: 20
+  - id: reddit-machinelearning
+    kind: reddit
+    name: r/MachineLearning
+    subreddit: MachineLearning
+    tier: 3
+    lang: en
+    category: community
+    max_items: 20
+  - id: reddit-openai
+    kind: reddit
+    name: r/OpenAI
+    subreddit: OpenAI
+    tier: 4
+    lang: en
+    category: community
+    max_items: 15
+  - id: reddit-claudeai
+    kind: reddit
+    name: r/ClaudeAI
+    subreddit: ClaudeAI
+    tier: 4
+    lang: en
+    category: community
+    max_items: 15
+  - id: reddit-deepseek
+    kind: reddit
+    name: r/DeepSeek
+    subreddit: DeepSeek
+    tier: 4
+    lang: en
+    category: community
+    max_items: 15
+  - id: reddit-artificial
+    kind: reddit
+    name: r/artificial
+    subreddit: artificial
+    tier: 4
+    lang: en
+    category: community
+    max_items: 15
+  - id: reddit-chatgpt
+    kind: reddit
+    name: r/ChatGPT
+    subreddit: ChatGPT
+    tier: 4
+    lang: en
+    category: community
+    max_items: 15
+  - id: reddit-geminAI
+    kind: reddit
+    name: r/GeminiAI
+    subreddit: GeminiAI
+    tier: 4
+    lang: en
+    category: community
+    max_items: 15
+  - id: reddit-promptengineering
+    kind: reddit
+    name: r/PromptEngineering
+    subreddit: PromptEngineering
+    tier: 4
+    lang: en
+    category: community
+    max_items: 15
+  - id: reddit-artificialinteligence
+    kind: reddit
+    name: r/ArtificialInteligence
+    subreddit: ArtificialInteligence
+    tier: 4
+    lang: en
+    category: community
+    max_items: 15
+  - id: reddit-openclaw
+    kind: reddit
+    name: r/openclaw
+    subreddit: openclaw
+    tier: 4
+    lang: en
+    category: community
+    max_items: 15
+  - id: telegram-ai-news
+    kind: telegram
+    name: Telegram AI News
+    channel: zaihuapd
+    tier: 4
+    lang: zh
+    category: community
+    max_items: 20
+  - id: telegram-aigc
+    kind: telegram
+    name: Telegram AIGC
+    channel: aigc_channel
+    tier: 5
+    lang: zh
+    category: community
+    max_items: 20
+  - id: github-vllm
+    kind: github
+    name: vLLM Releases
+    owner: vllm-project
+    repo: vllm
+    tier: 1
+    lang: en
+    category: open-source
+    max_items: 5
+  - id: github-sglang
+    kind: github
+    name: SGLang Releases
+    owner: sgl-project
+    repo: sglang
+    tier: 1
+    lang: en
+    category: open-source
+    max_items: 5
+  - id: github-transformers
+    kind: github
+    name: Transformers Releases
+    owner: huggingface
+    repo: transformers
+    tier: 1
+    lang: en
+    category: open-source
+    max_items: 5
+  - id: oss-insight
+    kind: ossinsight
+    name: OSS Insight Trending
+    tier: 2
+    lang: en
+    category: open-source
+    max_items: 20

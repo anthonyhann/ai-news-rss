@@ -1,0 +1,165 @@
+[
+  {
+    "id": "fixture-openai-launch",
+    "source_id": "openai-blog",
+    "kind": "rss",
+    "title": "OpenAI introduces a new multimodal reasoning model",
+    "url": "https://openai.com/index/multimodal-reasoning",
+    "canonical_url": "https://openai.com/index/multimodal-reasoning",
+    "author": "OpenAI",
+    "published_at": "2026-11-19T00:30:00Z",
+    "fetched_at": "2026-11-19T01:00:00Z",
+    "content": "OpenAI introduced a new multimodal reasoning model with a 1M-token context window and tool-use improvements. The release includes an API and a research report.",
+    "excerpt": "OpenAI introduced a new multimodal reasoning model with a 1M-token context window and tool-use improvements.",
+    "lang": "en",
+    "title_zh": "OpenAI 发布新的多模态推理模型",
+    "title_en": "OpenAI introduces a new multimodal reasoning model",
+    "metadata": {
+      "category": "model",
+      "tags": ["OpenAI", "multimodal", "reasoning"]
+    }
+  },
+  {
+    "id": "fixture-openai-duplicate",
+    "source_id": "techcrunch-ai",
+    "kind": "rss",
+    "title": "OpenAI introduces a new multimodal reasoning model",
+    "url": "https://techcrunch.com/2026/11/19/openai-multimodal-reasoning-model",
+    "canonical_url": "https://techcrunch.com/2026/11/19/openai-multimodal-reasoning-model",
+    "author": "TechCrunch",
+    "published_at": "2026-11-19T01:15:00Z",
+    "fetched_at": "2026-11-19T01:30:00Z",
+    "content": "TechCrunch reports that OpenAI launched a new multimodal reasoning model with a large context window.",
+    "excerpt": "TechCrunch reports that OpenAI launched a new multimodal reasoning model with a large context window.",
+    "lang": "en",
+    "title_zh": "OpenAI 推出新的多模态推理模型",
+    "title_en": "OpenAI introduces a new multimodal reasoning model",
+    "metadata": {
+      "category": "news",
+      "tags": ["OpenAI", "model"]
+    }
+  },
+  {
+    "id": "fixture-deepseek",
+    "source_id": "deepseek-news",
+    "kind": "rss",
+    "title": "DeepSeek 发布新一代推理模型并下调 API 价格",
+    "url": "https://api-docs.deepseek.com/news/reasoning-v4",
+    "canonical_url": "https://api-docs.deepseek.com/news/reasoning-v4",
+    "author": "DeepSeek",
+    "published_at": "2026-11-18T22:00:00Z",
+    "fetched_at": "2026-11-19T01:00:00Z",
+    "content": "DeepSeek 发布新一代推理模型，API 价格下调 50%，上下文窗口提升到 256K。官方同时发布了基准测试结果。",
+    "excerpt": "DeepSeek 发布新一代推理模型，API 价格下调 50%，上下文窗口提升到 256K。",
+    "lang": "zh",
+    "title_zh": "DeepSeek 发布新一代推理模型并下调 API 价格",
+    "title_en": "DeepSeek releases a new reasoning model and cuts API prices",
+    "metadata": {
+      "category": "model",
+      "tags": ["DeepSeek", "推理模型", "API"]
+    }
+  },
+  {
+    "id": "fixture-hn",
+    "source_id": "hacker-news",
+    "kind": "hackernews",
+    "title": "Ask HN: How are teams evaluating agent reliability?",
+    "url": "https://news.ycombinator.com/item?id=46000001",
+    "canonical_url": "https://news.ycombinator.com/item?id=46000001",
+    "author": "hn_user",
+    "published_at": "2026-11-18T18:10:00Z",
+    "fetched_at": "2026-11-19T01:00:00Z",
+    "content": "A discussion about agent evaluation, failure modes, and production reliability. --- Top Comments --- [tptacek]: The hard part is not benchmark scores, it is recovery when tools fail. [simonw]: Logs and regression tests matter more than another leaderboard.",
+    "excerpt": "A discussion about agent evaluation, failure modes, and production reliability.",
+    "lang": "en",
+    "title_zh": "HN 讨论：团队如何评估 Agent 可靠性",
+    "title_en": "Ask HN: How are teams evaluating agent reliability?",
+    "metadata": {
+      "category": "community",
+      "score": 212,
+      "descendants": 86,
+      "tags": ["Agent", "evaluation", "reliability"]
+    }
+  },
+  {
+    "id": "fixture-github",
+    "source_id": "github-vllm",
+    "kind": "github",
+    "title": "vllm-project/vllm: v0.11 release",
+    "url": "https://github.com/vllm-project/vllm/releases/tag/v0.11.0",
+    "canonical_url": "https://github.com/vllm-project/vllm/releases/tag/v0.11.0",
+    "author": "vllm-project",
+    "published_at": "2026-11-18T12:00:00Z",
+    "fetched_at": "2026-11-19T01:00:00Z",
+    "content": "vLLM v0.11 improves speculative decoding and adds a new scheduler for multi-LoRA serving.",
+    "excerpt": "vLLM v0.11 improves speculative decoding and adds a new scheduler for multi-LoRA serving.",
+    "lang": "en",
+    "title_zh": "vLLM v0.11 发布：改进投机解码与多 LoRA 调度",
+    "title_en": "vLLM v0.11: speculative decoding and multi-LoRA scheduling",
+    "metadata": {
+      "category": "open-source",
+      "repo": "vllm-project/vllm",
+      "tags": ["vLLM", "inference", "open-source"]
+    }
+  },
+  {
+    "id": "fixture-x",
+    "source_id": "x-ai-builders",
+    "kind": "x",
+    "title": "We are seeing agent products shift from chat to background workflows",
+    "url": "https://x.com/example_ai/status/1990000000000000000",
+    "canonical_url": "https://x.com/example_ai/status/1990000000000000000",
+    "author": "example_ai",
+    "published_at": "2026-11-19T00:45:00Z",
+    "fetched_at": "2026-11-19T01:00:00Z",
+    "content": "The most interesting agent products are moving from chat interfaces to background workflows that run continuously and report exceptions. The bottleneck is observability, not model quality.",
+    "excerpt": "The most interesting agent products are moving from chat interfaces to background workflows.",
+    "lang": "en",
+    "title_zh": "Agent 产品正从聊天界面转向后台工作流",
+    "title_en": "Agent products are shifting from chat to background workflows",
+    "metadata": {
+      "category": "social",
+      "likes": 1800,
+      "tags": ["Agent", "workflow", "observability"]
+    }
+  },
+  {
+    "id": "fixture-reddit",
+    "source_id": "reddit-localllama",
+    "kind": "reddit",
+    "title": "What actually changed after running local models for six months?",
+    "url": "https://www.reddit.com/r/LocalLLaMA/comments/example/local_models_six_months/",
+    "canonical_url": "https://www.reddit.com/r/LocalLLaMA/comments/example/local_models_six_months",
+    "author": "local_builder",
+    "published_at": "2026-11-18T16:00:00Z",
+    "fetched_at": "2026-11-19T01:00:00Z",
+    "content": "A practitioner report on running local models for six months: memory is the main constraint, quantization quality varies, and evaluation is still manual.",
+    "excerpt": "A practitioner report on running local models for six months.",
+    "lang": "en",
+    "title_zh": "运行本地模型六个月后，真实变化是什么？",
+    "title_en": "What actually changed after running local models for six months?",
+    "metadata": {
+      "category": "community",
+      "score": 380,
+      "num_comments": 74,
+      "tags": ["local models", "quantization", "evaluation"]
+    }
+  },
+  {
+    "id": "fixture-non-ai",
+    "source_id": "techcrunch-ai",
+    "kind": "rss",
+    "title": "A new browser UI framework ships a CSS reset",
+    "url": "https://example.com/frontend-css-reset",
+    "canonical_url": "https://example.com/frontend-css-reset",
+    "author": "Example",
+    "published_at": "2026-11-18T10:00:00Z",
+    "fetched_at": "2026-11-19T01:00:00Z",
+    "content": "A frontend framework released a new CSS reset for web developers.",
+    "excerpt": "A frontend framework released a new CSS reset for web developers.",
+    "lang": "en",
+    "metadata": {
+      "category": "web"
+    }
+  }
+]

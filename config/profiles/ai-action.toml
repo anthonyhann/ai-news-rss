@@ -1,0 +1,4 @@
+id = "ai-action"
+name = "AI Action Plan"
+weights = { relevance = 20, impact = 30, novelty = 10, credibility = 10, community = 5, actionability = 25 }
+threshold = 70

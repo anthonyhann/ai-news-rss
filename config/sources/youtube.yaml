@@ -1,0 +1,98 @@
+sources:
+  - id: yt-lex-fridman
+    kind: youtube
+    name: Lex Fridman
+    url: https://www.youtube.com/feeds/videos.xml?channel_id=UCSHZKyawb77ixDdsGog4iWA
+    tier: 2
+    lang: en
+    category: video
+    max_items: 3
+    connector:
+      transcript: true
+  - id: yt-dwarkesh
+    kind: youtube
+    name: Dwarkesh Patel
+    url: https://www.youtube.com/feeds/videos.xml?channel_id=UCX1v-zaMxcg4OAaLs7GAT8g
+    tier: 2
+    lang: en
+    category: video
+    max_items: 3
+    connector:
+      transcript: true
+  - id: yt-two-minute-papers
+    kind: youtube
+    name: Two Minute Papers
+    url: https://www.youtube.com/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg
+    tier: 2
+    lang: en
+    category: video
+  - id: yt-yannic-kilcher
+    kind: youtube
+    name: Yannic Kilcher
+    url: https://www.youtube.com/feeds/videos.xml?channel_id=UCZHmQk67mSJgfCCTn7xBfew
+    tier: 2
+    lang: en
+    category: video
+  - id: yt-fireship
+    kind: youtube
+    name: Fireship
+    url: https://www.youtube.com/feeds/videos.xml?channel_id=UCsBjURrPoezykLs9EqgamOA
+    tier: 3
+    lang: en
+    category: video
+  - id: yt-matt-wolfe
+    kind: youtube
+    name: Matt Wolfe
+    url: https://www.youtube.com/feeds/videos.xml?channel_id=UChpleBmo18P08aKCIgti38g
+    tier: 3
+    lang: en
+    category: video
+  - id: yt-wes-roth
+    kind: youtube
+    name: Wes Roth
+    url: https://www.youtube.com/feeds/videos.xml?channel_id=UCqcbQf6yw5WxR04F4kq4QCA
+    tier: 3
+    lang: en
+    category: video
+  - id: yt-latent-space
+    kind: youtube
+    name: Latent Space
+    url: https://www.youtube.com/feeds/videos.xml?channel_id=UCwC6gbFvJfJ7j7d1jfX0F2g
+    tier: 2
+    lang: en
+    category: video
+  - id: yt-no-priors
+    kind: youtube
+    name: No Priors
+    url: https://www.youtube.com/feeds/videos.xml?channel_id=UCg2f8B7n6Q7Xb1J9yQx8W6A
+    tier: 2
+    lang: en
+    category: video
+  - id: yt-sequoia
+    kind: youtube
+    name: Sequoia Capital
+    url: https://www.youtube.com/feeds/videos.xml?channel_id=UCWrF0pZ5J8u6z1pXb1h0J0w
+    tier: 3
+    lang: en
+    category: video
+  - id: yt-redpoint
+    kind: youtube
+    name: Redpoint AI
+    url: https://www.youtube.com/feeds/videos.xml?channel_id=UCm9K6rby98W8JigLoZOh6FQ
+    tier: 3
+    lang: en
+    category: video
+  - id: yt-every
+    kind: youtube
+    name: Every
+    url: https://www.youtube.com/feeds/videos.xml?channel_id=UC5r8h7h8v9Q2N3o5l0XJ8Qw
+    tier: 3
+    lang: en
+    category: video
+  - id: yt-data-driven-nyc
+    kind: youtube
+    name: Data Driven NYC
+    url: https://www.youtube.com/feeds/videos.xml?channel_id=UC5r8h7h8v9Q2N3o5l0XJ8Qw
+    tier: 3
+    lang: en
+    category: video

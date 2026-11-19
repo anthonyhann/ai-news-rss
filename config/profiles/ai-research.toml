@@ -1,0 +1,4 @@
+id = "ai-research"
+name = "AI Research"
+weights = { relevance = 30, impact = 20, novelty = 20, credibility = 20, community = 5, actionability = 5 }
+threshold = 65

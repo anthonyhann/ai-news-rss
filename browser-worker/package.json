@@ -1,0 +1,13 @@
+{
+  "name": "ainews-browser-worker",
+  "private": true,
+  "type": "module",
+  "description": "Playwright X List worker for AI Radar",
+  "license": "MIT",
+  "scripts": {
+    "x": "node playwright-x.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.65.0"
+  }
+}

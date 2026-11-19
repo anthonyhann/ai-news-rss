@@ -1,0 +1,4 @@
+id = "ai-community"
+name = "AI Community"
+weights = { relevance = 25, impact = 15, novelty = 10, credibility = 10, community = 35, actionability = 5 }
+threshold = 55

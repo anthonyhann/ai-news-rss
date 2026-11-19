@@ -1,0 +1,473 @@
+sources:
+  - id: openai-blog
+    kind: rss
+    name: OpenAI Blog
+    url: https://openai.com/news/rss.xml
+    tier: 1
+    lang: en
+    category: model
+  - id: anthropic-news
+    kind: rss
+    name: Anthropic News
+    url: https://www.anthropic.com/news/rss.xml
+    enabled: false
+    tier: 1
+    lang: en
+    category: model
+  - id: deepmind-blog
+    kind: rss
+    name: Google DeepMind
+    url: https://deepmind.google/blog/rss.xml
+    tier: 1
+    lang: en
+    category: model
+  - id: google-ai-blog
+    kind: rss
+    name: Google AI
+    url: https://blog.google/technology/ai/rss/
+    tier: 1
+    lang: en
+    category: model
+  - id: google-research
+    kind: rss
+    name: Google Research
+    url: https://research.google/blog/rss/
+    tier: 1
+    lang: en
+    category: research
+  - id: meta-ai
+    kind: rss
+    name: Meta AI
+    url: https://ai.meta.com/blog/rss/
+    tier: 1
+    lang: en
+    category: model
+  - id: microsoft-ai
+    kind: rss
+    name: Microsoft AI
+    url: https://blogs.microsoft.com/ai/feed/
+    enabled: false
+    tier: 1
+    lang: en
+    category: model
+  - id: msr-research
+    kind: rss
+    name: Microsoft Research
+    url: https://www.microsoft.com/en-us/research/feed/
+    tier: 1
+    lang: en
+    category: research
+  - id: nvidia-deep-learning
+    kind: rss
+    name: NVIDIA Deep Learning
+    url: https://blogs.nvidia.com/blog/category/deep-learning/feed/
+    tier: 1
+    lang: en
+    category: model
+  - id: nvidia-developer
+    kind: rss
+    name: NVIDIA Developer
+    url: https://developer.nvidia.com/blog/feed/
+    tier: 1
+    lang: en
+    category: infrastructure
+  - id: huggingface-blog
+    kind: rss
+    name: Hugging Face Blog
+    url: https://huggingface.co/blog/feed.xml
+    tier: 1
+    lang: en
+    category: open-source
+  - id: mistral-news
+    kind: rss
+    name: Mistral AI
+    url: https://mistral.ai/news/feed.xml
+    tier: 1
+    lang: en
+    category: model
+  - id: qwen-blog
+    kind: rss
+    name: Qwen Blog
+    url: https://qwenlm.github.io/blog/index.xml
+    tier: 1
+    lang: en
+    category: model
+  - id: deepseek-news
+    kind: rss
+    name: DeepSeek News
+    url: https://api-docs.deepseek.com/news/rss.xml
+    enabled: false
+    tier: 1
+    lang: en
+    category: model
+  - id: apple-ml
+    kind: rss
+    name: Apple Machine Learning
+    url: https://machinelearning.apple.com/rss.xml
+    tier: 1
+    lang: en
+    category: research
+  - id: bair
+    kind: rss
+    name: Berkeley AI Research
+    url: https://bair.berkeley.edu/blog/feed.xml
+    tier: 1
+    lang: en
+    category: research
+  - id: stanford-hai
+    kind: rss
+    name: Stanford HAI
+    url: https://hai.stanford.edu/news/rss.xml
+    tier: 1
+    lang: en
+    category: research
+  - id: mit-news-ai
+    kind: rss
+    name: MIT News AI
+    url: https://news.mit.edu/rss/topic/artificial-intelligence2
+    tier: 1
+    lang: en
+    category: research
+  - id: techcrunch-ai
+    kind: rss
+    name: TechCrunch AI
+    url: https://techcrunch.com/category/artificial-intelligence/feed/
+    tier: 3
+    lang: en
+    category: news
+  - id: verge
+    kind: rss
+    name: The Verge
+    url: https://www.theverge.com/rss/index.xml
+    tier: 3
+    lang: en
+    category: news
+  - id: mit-tr-ai
+    kind: rss
+    name: MIT Technology Review AI
+    url: https://www.technologyreview.com/topic/artificial-intelligence/feed/
+    tier: 3
+    lang: en
+    category: news
+  - id: venturebeat-ai
+    kind: rss
+    name: VentureBeat AI
+    url: https://venturebeat.com/category/ai/feed
+    tier: 3
+    lang: en
+    category: news
+  - id: marktechpost
+    kind: rss
+    name: MarkTechPost
+    url: https://www.marktechpost.com/feed/
+    tier: 3
+    lang: en
+    category: news
+  - id: simon-willison
+    kind: rss
+    name: Simon Willison
+    url: https://simonwillison.net/atom/everything/
+    tier: 2
+    lang: en
+    category: tools
+  - id: vllm-blog
+    kind: rss
+    name: vLLM Blog
+    url: https://vllm.ai/blog/rss.xml
+    tier: 2
+    lang: en
+    category: infrastructure
+  - id: semianalysis
+    kind: rss
+    name: SemiAnalysis
+    url: https://newsletter.semianalysis.com/feed
+    tier: 2
+    lang: en
+    category: infrastructure
+  - id: latent-space
+    kind: rss
+    name: Latent Space
+    url: https://www.latent.space/feed
+    tier: 2
+    lang: en
+    category: newsletter
+  - id: interconnects
+    kind: rss
+    name: Interconnects
+    url: https://www.interconnects.ai/feed
+    tier: 2
+    lang: en
+    category: newsletter
+  - id: one-useful-thing
+    kind: rss
+    name: One Useful Thing
+    url: https://www.oneusefulthing.org/feed
+    tier: 2
+    lang: en
+    category: newsletter
+  - id: ahead-of-ai
+    kind: rss
+    name: Ahead of AI
+    url: https://magazine.sebastianraschka.com/feed
+    tier: 2
+    lang: en
+    category: newsletter
+  - id: lilian-weng
+    kind: rss
+    name: Lilian Weng
+    url: https://lilianweng.github.io/index.xml
+    tier: 2
+    lang: en
+    category: research
+  - id: eugene-yan
+    kind: rss
+    name: Eugene Yan
+    url: https://eugeneyan.com/rss/
+    tier: 2
+    lang: en
+    category: research
+  - id: hamel-husain
+    kind: rss
+    name: Hamel Husain
+    url: https://hamel.dev/index.xml
+    tier: 2
+    lang: en
+    category: research
+  - id: chip-huyen
+    kind: rss
+    name: Chip Huyen
+    url: https://huyenchip.com/feed.xml
+    tier: 2
+    lang: en
+    category: research
+  - id: import-ai
+    kind: rss
+    name: Import AI
+    url: https://importai.substack.com/feed
+    tier: 2
+    lang: en
+    category: newsletter
+  - id: the-gradient
+    kind: rss
+    name: The Gradient
+    url: https://thegradient.pub/rss/
+    tier: 3
+    lang: en
+    category: research
+  - id: github-trending
+    kind: rss
+    name: GitHub Trending
+    url: https://mshibanami.github.io/GitHubTrendingRSS/daily/all.xml
+    tier: 2
+    lang: en
+    category: open-source
+  - id: arxiv-ai
+    kind: arxiv
+    name: arXiv cs.AI
+    url: https://export.arxiv.org/rss/cs.AI
+    tier: 1
+    lang: en
+    category: research
+  - id: cohere-blog
+    kind: rss
+    name: Cohere Blog
+    url: https://cohere.com/blog/rss.xml
+    enabled: false
+    tier: 1
+    lang: en
+    category: model
+  - id: stability-news
+    kind: rss
+    name: Stability AI News
+    url: https://stability.ai/news?format=rss
+    enabled: false
+    tier: 1
+    lang: en
+    category: model
+  - id: runway-blog
+    kind: rss
+    name: Runway Blog
+    url: https://runwayml.com/blog/rss.xml
+    enabled: false
+    tier: 1
+    lang: en
+    category: model
+  - id: replicate-blog
+    kind: rss
+    name: Replicate Blog
+    url: https://replicate.com/blog/rss
+    tier: 2
+    lang: en
+    category: infrastructure
+  - id: together-blog
+    kind: rss
+    name: Together AI Blog
+    url: https://www.together.ai/blog/rss.xml
+    tier: 1
+    lang: en
+    category: infrastructure
+  - id: groq-news
+    kind: rss
+    name: Groq News
+    url: https://groq.com/news/feed/
+    enabled: false
+    tier: 1
+    lang: en
+    category: infrastructure
+  - id: perplexity-blog
+    kind: rss
+    name: Perplexity Blog
+    url: https://www.perplexity.ai/hub/blog/rss.xml
+    tier: 1
+    lang: en
+    category: product
+  - id: langchain-blog
+    kind: rss
+    name: LangChain Blog
+    url: https://blog.langchain.dev/rss/
+    enabled: false
+    tier: 2
+    lang: en
+    category: agent
+  - id: llamaindex-blog
+    kind: rss
+    name: LlamaIndex Blog
+    url: https://www.llamaindex.ai/blog/rss.xml
+    enabled: false
+    tier: 2
+    lang: en
+    category: agent
+  - id: ollama-blog
+    kind: rss
+    name: Ollama Blog
+    url: https://ollama.com/blog/rss.xml
+    tier: 2
+    lang: en
+    category: tools
+  - id: cursor-blog
+    kind: rss
+    name: Cursor Blog
+    url: https://cursor.com/blog/rss.xml
+    tier: 2
+    lang: en
+    category: tools
+  - id: windsurf-blog
+    kind: rss
+    name: Windsurf Blog
+    url: https://windsurf.com/blog/rss.xml
+    enabled: false
+    tier: 2
+    lang: en
+    category: tools
+  - id: vercel-ai
+    kind: rss
+    name: Vercel AI
+    url: https://vercel.com/blog/rss.xml
+    tier: 2
+    lang: en
+    category: tools
+  - id: cloudflare-ai
+    kind: rss
+    name: Cloudflare AI
+    url: https://blog.cloudflare.com/tag/ai/rss/
+    tier: 2
+    lang: en
+    category: infrastructure
+  - id: aws-ml
+    kind: rss
+    name: AWS Machine Learning
+    url: https://aws.amazon.com/blogs/machine-learning/feed/
+    tier: 1
+    lang: en
+    category: infrastructure
+  - id: pytorch-blog
+    kind: rss
+    name: PyTorch Blog
+    url: https://pytorch.org/blog/feed.xml
+    tier: 1
+    lang: en
+    category: open-source
+  - id: tensorflow-blog
+    kind: rss
+    name: TensorFlow Blog
+    url: https://blog.tensorflow.org/feeds/posts/default
+    tier: 1
+    lang: en
+    category: open-source
+  - id: eleuther-blog
+    kind: rss
+    name: EleutherAI Blog
+    url: https://blog.eleuther.ai/rss/
+    enabled: false
+    tier: 1
+    lang: en
+    category: research
+  - id: modal-blog
+    kind: rss
+    name: Modal Blog
+    url: https://modal.com/blog/rss.xml
+    enabled: false
+    tier: 2
+    lang: en
+    category: infrastructure
+  - id: bentoml-blog
+    kind: rss
+    name: BentoML Blog
+    url: https://www.bentoml.com/blog/rss.xml
+    enabled: false
+    tier: 2
+    lang: en
+    category: infrastructure
+  - id: anyscale-blog
+    kind: rss
+    name: Anyscale Blog
+    url: https://www.anyscale.com/blog/rss.xml
+    enabled: false
+    tier: 2
+    lang: en
+    category: infrastructure
+  - id: databricks-blog
+    kind: rss
+    name: Databricks Blog
+    url: https://www.databricks.com/feed
+    tier: 2
+    lang: en
+    category: infrastructure
+  - id: ibm-research
+    kind: rss
+    name: IBM Research
+    url: https://research.ibm.com/blog/rss
+    enabled: false
+    tier: 1
+    lang: en
+    category: research
+  - id: adobe-research
+    kind: rss
+    name: Adobe Research
+    url: https://research.adobe.com/feed/
+    enabled: false
+    tier: 1
+    lang: en
+    category: research
+  - id: salesforce-ai
+    kind: rss
+    name: Salesforce AI
+    url: https://www.salesforce.com/blog/feed/
+    tier: 2
+    lang: en
+    category: product
+  - id: meituan-tech
+    kind: rss
+    name: 美团技术团队
+    url: https://tech.meituan.com/feed
+    tier: 2
+    lang: zh
+    category: engineering
+  - id: baai-hub
+    kind: rss
+    name: 智源社区
+    url: https://hub.baai.ac.cn/rss
+    enabled: false
+    tier: 2
+    lang: zh
+    category: china-ai

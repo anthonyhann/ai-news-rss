@@ -1,0 +1,6 @@
+id = "ai-news"
+name = "AI News"
+weights = { relevance = 30, impact = 25, novelty = 15, credibility = 15, community = 10, actionability = 5 }
+threshold = 60
+alert_threshold = 90
+alert_confidence = 0.8

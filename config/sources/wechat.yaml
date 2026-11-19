@@ -1,0 +1,144 @@
+# WeChat Official Accounts are not directly scrapeable. These feeds must be
+# served by a self-hosted RSS bridge (wechat2rss, WeRSS, etc.). Set
+# WECHAT_RSS_BASE to the bridge base URL; entries fail closed when it is absent.
+sources:
+  - id: wechat-jiqizhixin
+    kind: wechat
+    name: 机器之心
+    url: ${WECHAT_RSS_BASE}/wechat-jiqizhixin.xml
+    tier: 4
+    lang: zh
+    category: china-ai
+  - id: wechat-liangziwei
+    kind: wechat
+    name: 量子位
+    url: ${WECHAT_RSS_BASE}/wechat-liangziwei.xml
+    tier: 4
+    lang: zh
+    category: china-ai
+  - id: wechat-xinzhiyuan
+    kind: wechat
+    name: 新智元
+    url: ${WECHAT_RSS_BASE}/wechat-xinzhiyuan.xml
+    tier: 4
+    lang: zh
+    category: china-ai
+  - id: wechat-paperweekly
+    kind: wechat
+    name: PaperWeekly
+    url: ${WECHAT_RSS_BASE}/wechat-paperweekly.xml
+    tier: 4
+    lang: zh
+    category: research
+  - id: wechat-jiazhiguangnian
+    kind: wechat
+    name: 甲子光年
+    url: ${WECHAT_RSS_BASE}/wechat-jiazhiguangnian.xml
+    tier: 4
+    lang: zh
+    category: china-ai
+  - id: wechat-36kr
+    kind: wechat
+    name: 36氪
+    url: ${WECHAT_RSS_BASE}/wechat-36kr.xml
+    tier: 5
+    lang: zh
+    category: business
+  - id: wechat-latepost
+    kind: wechat
+    name: 晚点LatePost
+    url: ${WECHAT_RSS_BASE}/wechat-latepost.xml
+    tier: 4
+    lang: zh
+    category: business
+  - id: wechat-geekpark
+    kind: wechat
+    name: 极客公园
+    url: ${WECHAT_RSS_BASE}/wechat-geekpark.xml
+    tier: 5
+    lang: zh
+    category: product
+  - id: wechat-infoq
+    kind: wechat
+    name: InfoQ
+    url: ${WECHAT_RSS_BASE}/wechat-infoq.xml
+    tier: 4
+    lang: zh
+    category: engineering
+  - id: wechat-githubdaily
+    kind: wechat
+    name: GitHubDaily
+    url: ${WECHAT_RSS_BASE}/wechat-githubdaily.xml
+    tier: 4
+    lang: zh
+    category: open-source
+  - id: wechat-baoyu
+    kind: wechat
+    name: 宝玉的分享
+    url: ${WECHAT_RSS_BASE}/wechat-baoyu.xml
+    tier: 4
+    lang: zh
+    category: ai-tools
+  - id: wechat-guizang
+    kind: wechat
+    name: 歸藏
+    url: ${WECHAT_RSS_BASE}/wechat-guizang.xml
+    tier: 4
+    lang: zh
+    category: ai-tools
+  - id: wechat-xiaohu
+    kind: wechat
+    name: 小互
+    url: ${WECHAT_RSS_BASE}/wechat-xiaohu.xml
+    tier: 4
+    lang: zh
+    category: ai-tools
+  - id: wechat-lijigang
+    kind: wechat
+    name: 李继刚
+    url: ${WECHAT_RSS_BASE}/wechat-lijigang.xml
+    tier: 4
+    lang: zh
+    category: prompt
+  - id: wechat-tw93
+    kind: wechat
+    name: Tw93
+    url: ${WECHAT_RSS_BASE}/wechat-tw93.xml
+    tier: 4
+    lang: zh
+    category: engineering
+  - id: wechat-founders
+    kind: wechat
+    name: FounderPark
+    url: ${WECHAT_RSS_BASE}/wechat-founders.xml
+    tier: 5
+    lang: zh
+    category: business
+  - id: wechat-wallstreetcn
+    kind: wechat
+    name: 华尔街见闻
+    url: ${WECHAT_RSS_BASE}/wechat-wallstreetcn.xml
+    tier: 5
+    lang: zh
+    category: finance
+  - id: wechat-huxiu
+    kind: wechat
+    name: 虎嗅
+    url: ${WECHAT_RSS_BASE}/wechat-huxiu.xml
+    tier: 5
+    lang: zh
+    category: business
+  - id: wechat-apso
+    kind: wechat
+    name: APPSO
+    url: ${WECHAT_RSS_BASE}/wechat-apso.xml
+    tier: 5
+    lang: zh
+    category: product
+  - id: wechat-shaoshupai
+    kind: wechat
+    name: 少数派
+    url: ${WECHAT_RSS_BASE}/wechat-shaoshupai.xml
+    tier: 5
+    lang: zh
+    category: product

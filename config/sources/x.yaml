@@ -1,0 +1,47 @@
+x_handles:
+  - karpathy
+  - sama
+  - ylecun
+  - demishassabis
+  - drfeifei
+  - fchollet
+  - ID_AA_Carmack
+  - lilianweng
+  - AmandaAskell
+  - alexalbert__
+  - bcherny
+  - _catwu
+  - simonw
+  - swyx
+  - goodside
+  - jeremyphoward
+  - rauchg
+  - amasad
+  - levie
+  - garrytan
+  - kevinweil
+  - steipete
+  - petergyang
+  - danshipper
+  - mattturck
+  - thenanyu
+  - nikunj
+  - joshwoodward
+  - ryolu_
+  - trq212
+  - adityaag
+  - realmadhuguru
+  - claudeai
+  - ClaudeDevs
+  - GoogleLabs
+
+sources:
+  - id: x-ai-builders
+    kind: x
+    name: X AI Builders
+    list_url: ${X_LIST_URL}
+    tier: 2
+    lang: en
+    category: social
+    max_items: 100
+    enabled: true

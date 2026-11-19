@@ -1,0 +1,17 @@
+/target
+/data
+/web/dist
+/web/public/data
+/web/node_modules
+/browser-worker/node_modules
+/.env
+/.env.local
+/state.sqlite3
+/state.sqlite3-shm
+/state.sqlite3-wal
+/tests/fixtures/*.out.json
+*.tsbuildinfo
+/web/vite.config.js
+/web/vite.config.d.ts
+__pycache__/
+.DS_Store

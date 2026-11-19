@@ -1,0 +1,77 @@
+[app]
+timezone = "Asia/Shanghai"
+data_dir = "data"
+public_dir = "web/public/data"
+source_dir = "config/sources"
+profile_dir = "config/profiles"
+fixture_file = "tests/fixtures/items.json"
+
+[ai]
+base_url = "${LLM_BASE_URL}"
+api_key_env = "LLM_API_KEY"
+scoring_model = "${LLM_SCORING_MODEL}"
+editor_model = "${LLM_EDITOR_MODEL}"
+temperature = 0.2
+max_items_per_run = 300
+max_editor_items = 30
+max_tokens_per_run = 350000
+prompt_version = "v1"
+
+[pipeline]
+dedup_days = 7
+simhash_hamming = 3
+title_jaccard = 0.72
+digest_score = 60.0
+alert_score = 90.0
+alert_confidence = 0.8
+max_alerts_per_run = 3
+languages = ["zh", "en"]
+translate_max_new = 80
+
+[delivery.wecom]
+enabled = false
+url_env = "WECOM_WEBHOOK_URL"
+
+[delivery.feishu]
+enabled = false
+url_env = "FEISHU_WEBHOOK_URL"
+
+[delivery.dingtalk]
+enabled = false
+url_env = "DINGTALK_WEBHOOK_URL"
+
+[delivery.telegram]
+enabled = false
+token_env = "TELEGRAM_BOT_TOKEN"
+chat_id_env = "TELEGRAM_CHAT_ID"
+
+[delivery.email]
+enabled = false
+smtp_server = "smtp.qq.com"
+smtp_port = 465
+username = ""
+password_env = "EMAIL_PASSWORD"
+from = ""
+to = ""
+
+[browser]
+provider = "auto"
+headless = true
+profile_dir = "~/.easel-browser-profiles/TwitterXProfile"
+storage_state_env = "X_STORAGE_STATE_B64"
+max_scrolls = 12
+scroll_delay_ms = 1800
+timeout_ms = 45000
+proxy_env = "EASEL_PROXY"
+user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+worker_dir = "browser-worker"
+
+[server]
+bind = "127.0.0.1:8080"
+admin_token_env = "ADMIN_TOKEN"
+
+[retention]
+items_days = 30
+briefs_days = 365
+deliveries_days = 90
+runs_days = 30
