@@ -46,9 +46,6 @@ jobs:
             browser-worker/pnpm-lock.yaml
       - run: pnpm --dir web install --frozen-lockfile
       - run: pnpm --dir browser-worker install --frozen-lockfile
-      - name: Install Playwright Chromium (optional fallback)
-        continue-on-error: true
-        run: pnpm --dir browser-worker exec playwright install --with-deps chromium
       - name: Install yt-dlp for YouTube transcripts
         continue-on-error: true
         run: |
