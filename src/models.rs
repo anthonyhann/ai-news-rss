@@ -334,6 +334,8 @@ pub struct ActionOption {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ActionPlan {
     pub date: String,
+    #[serde(default)]
+    pub candidates: Vec<ActionOption>,
     pub top_action: Option<ActionOption>,
     #[serde(default)]
     pub experiments: Vec<ActionOption>,
@@ -437,6 +439,8 @@ pub struct FeedPayload {
     pub sources: Vec<SourceHealth>,
     #[serde(default)]
     pub briefs: Vec<BriefSummary>,
+    #[serde(default)]
+    pub action_plan: Option<ActionPlan>,
     #[serde(default)]
     pub run: RunStats,
 }

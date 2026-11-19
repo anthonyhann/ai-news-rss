@@ -43,6 +43,26 @@ export interface BriefSummary {
   path: string;
 }
 
+export interface ActionOption {
+  title: string;
+  why_now: string;
+  impact: number;
+  feasibility: number;
+  speed: number;
+  confidence: number;
+  evidence: string[];
+}
+
+export interface ActionPlan {
+  date: string;
+  candidates?: ActionOption[];
+  top_action?: ActionOption;
+  experiments: ActionOption[];
+  watchlist: string[];
+  summary: string;
+  model?: string;
+}
+
 export interface SourceHealth {
   source_id: string;
   name: string;
@@ -93,29 +113,7 @@ export interface Brief {
     }>;
   }>;
   top_signals: Brief["sections"][number]["items"];
-  action_plan?: {
-    date: string;
-    top_action?: {
-      title: string;
-      why_now: string;
-      impact: number;
-      feasibility: number;
-      speed: number;
-      confidence: number;
-      evidence: string[];
-    };
-    experiments: Array<{
-      title: string;
-      why_now: string;
-      impact: number;
-      feasibility: number;
-      speed: number;
-      confidence: number;
-      evidence: string[];
-    }>;
-    watchlist: string[];
-    summary: string;
-  };
+  action_plan?: ActionPlan;
   markdown: string;
   model: string;
 }
@@ -127,5 +125,6 @@ export interface FeedPayload {
   items: Story[];
   sources: SourceHealth[];
   briefs: BriefSummary[];
+  action_plan?: ActionPlan;
   run: RunStats;
 }

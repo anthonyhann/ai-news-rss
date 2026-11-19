@@ -1,4 +1,4 @@
-# AI Radar · AI News RSS
+# Muse Radar · AI News RSS
 
 **English** | [中文](README.md)
 
@@ -9,7 +9,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Live](https://img.shields.io/badge/Live-Dashboard-d8ff65)](https://anthonyhann.github.io/ai-news-rss/)
 
-AI Radar is a self-hosted intelligence desk for the AI ecosystem. A Rust core
+Muse Radar is a self-hosted intelligence desk for the AI ecosystem. A Rust core
 collects and deduplicates sources, scores them with an editor model, writes a
 bilingual brief, generates a daily action plan, and delivers high-signal alerts.
 A React dashboard publishes the same data as a static site or an axum-backed
@@ -18,13 +18,13 @@ server.
 The goal is not more information. The goal is fewer bad judgments and a
 traceable path back to the original source.
 
-![AI Radar dashboard](docs/assets/dashboard.png)
+![Muse Radar dashboard](docs/assets/dashboard.png)
 
 ## Why This Exists
 
 AI news is fragmented across lab blogs, X, YouTube, Reddit, Hacker News,
 GitHub, Telegram, WeChat RSS bridges, and newsletters. Most aggregators stop at
-“here are more links.” AI Radar adds an editorial layer:
+“here are more links.” Muse Radar adds an editorial layer:
 
 - **Deterministic first:** URL normalization, content hashes, and 64-bit
   SimHash remove exact and near-duplicate stories.
@@ -47,12 +47,21 @@ GitHub, Telegram, WeChat RSS bridges, and newsletters. Most aggregators stop at
 | Deduplication | canonical URLs, SHA-256 content hashes, SimHash buckets, title Jaccard, model event merge |
 | Scoring | 0–100 editorial rubric with hard caps for non-AI, rumors, missing links, and stale content |
 | Briefs | Chinese and English editions, executive summary, top signals, background, community discussion, citations |
-| Action plan | Tree-of-Thoughts candidate generation and impact/feasibility/speed/confidence selection |
+| Action plan | Tree-of-Thoughts generates 3–5 candidates ranked by impact, feasibility, speed and confidence; score summaries are visible in the brief |
 | Alerts | score ≥ 90, confidence ≥ 0.80, 24-hour story deduplication, optional material follow-ups |
 | Delivery | WeCom, Feishu, DingTalk, Telegram, email, web publication |
 | Web | Today, Briefs, Sources, Alerts, Archive, About; bilingual toggle, search, filters, bookmarks, dark/light mode |
 | Deployment | GitHub Actions + Pages, local CLI, Docker/Compose, axum API |
 | Browser | Playwright worker for Actions/servers; ego-lite for a local logged-in browser |
+
+### Tree-of-Thoughts Action Plan
+
+Each daily brief keeps the candidate actions and their four-dimensional score
+summary. The editor selects one primary action, two reversible experiments,
+and one watch item; every recommendation links back to evidence. The UI exposes
+the auditable scoring summary without revealing hidden reasoning.
+
+![Muse Radar action plan](docs/assets/action-plan.png)
 
 ## Source Coverage
 

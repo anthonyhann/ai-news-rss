@@ -1,9 +1,9 @@
 {
-  "name": "AI Radar",
-  "short_name": "AI Radar",
+  "name": "Muse Radar",
+  "short_name": "Muse",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#0a0f14",
-  "theme_color": "#0a0f14",
+  "background_color": "#f6f1e7",
+  "theme_color": "#f6f1e7",
   "icons": []
 }

@@ -1,4 +1,4 @@
-# AI Radar · AI News RSS
+# Muse Radar · AI News RSS
 
 **中文** | [English](README_EN.md)
 
@@ -9,13 +9,13 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Live](https://img.shields.io/badge/Live-Dashboard-d8ff65)](https://anthonyhann.github.io/ai-news-rss/)
 
-AI Radar 是一个自托管的 AI 情报台。Rust 核心负责采集、去重、评分、简报和推送；React/Vite 负责可视化；SQLite 保存跨天状态。它不追求“给你更多链接”，而是把全网高信号信息压缩成一份可追溯、可行动、可双语阅读的每日简报。
+Muse Radar 是一个自托管的 AI 情报台。Rust 核心负责采集、去重、评分、简报和推送；React/Vite 负责可视化；SQLite 保存跨天状态。它不追求“给你更多链接”，而是把全网高信号信息压缩成一份可追溯、可行动、可双语阅读的每日简报。
 
-![AI Radar dashboard](docs/assets/dashboard.png)
+![Muse Radar dashboard](docs/assets/dashboard.png)
 
 ## 为什么做这个项目
 
-AI 信息散落在实验室博客、X、YouTube、Reddit、Hacker News、GitHub、Telegram、微信公众号 RSS 桥和 Newsletter 里。普通聚合器通常停在“这里还有更多链接”，AI Radar 增加了一层编辑判断：
+AI 信息散落在实验室博客、X、YouTube、Reddit、Hacker News、GitHub、Telegram、微信公众号 RSS 桥和 Newsletter 里。普通聚合器通常停在“这里还有更多链接”，Muse Radar 增加了一层编辑判断：
 
 - **先做确定性处理**：URL 规范化、内容哈希、64 位 SimHash，先清掉明显重复和近重复。
 - **再做模型事件合并**：由模型判断 `same_event`、`follow_up`、`different_event`，避免把同一发布拆成多条。
@@ -32,12 +32,18 @@ AI 信息散落在实验室博客、X、YouTube、Reddit、Hacker News、GitHub�
 | 去重 | 规范化 URL、SHA-256 内容哈希、SimHash 分桶、标题 Jaccard、模型事件合并 |
 | 评分 | 0–100 编辑评分，含非 AI、传言、无原文链接、过期内容的硬上限 |
 | 简报 | 中英双语、今日结论、Top Signals、背景知识、社区讨论、原文引用 |
-| 行动 | 思维树生成候选行动，按影响、可行性、见效速度、置信度选择 |
+| 行动 | 思维树生成 3–5 个候选行动，按影响、可行性、见效速度、置信度选择；候选评分在简报中公开可见 |
 | 告警 | ≥90 分、置信度 ≥0.80、24 小时故事去重，支持实质性更新 |
 | 推送 | 企业微信、飞书、钉钉、Telegram、邮件、网页发布 |
 | Web | 今日雷达、每日简报、信源健康、高分告警、归档、方法页；中英切换、搜索、过滤、收藏、深浅色 |
 | 部署 | GitHub Actions + Pages、本地 CLI、Docker/Compose、axum API |
 | 浏览器 | Actions/服务器用 Playwright worker；本机已登录浏览器用 ego-lite |
+
+### 思维树行动建议
+
+每日简报不只给结论，还会保留候选行动与四维评分摘要。系统选择一个主行动、两个可逆实验和一个观察项，每条建议都能回到证据链接；界面只展示可审计的评分摘要，不暴露隐藏推理。
+
+![Muse Radar action plan](docs/assets/action-plan.png)
 
 ## 信源覆盖
 

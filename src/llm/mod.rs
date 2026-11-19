@@ -272,10 +272,20 @@ impl LlmProvider for MockLlm {
             confidence: 0.7,
             evidence: vec![],
         };
+        let second_experiment = ActionOption {
+            title: "用 30 分钟做一次可逆的小实验".into(),
+            why_now: "先验证最小假设，再决定是否投入更多时间。".into(),
+            impact: 7.0,
+            feasibility: 8.0,
+            speed: 7.0,
+            confidence: 0.68,
+            evidence: main.evidence.clone(),
+        };
         Ok(ActionPlan {
             date: date.into(),
+            candidates: vec![main.clone(), experiment.clone(), second_experiment.clone()],
             top_action: Some(main),
-            experiments: vec![experiment],
+            experiments: vec![experiment, second_experiment],
             watchlist: vec!["关注同事件的后续官方更新与社区反馈".into()],
             summary: "用最小成本验证今日最高分信号，并沉淀一个可复用的判断清单。".into(),
             model: self.model.clone(),
@@ -636,7 +646,7 @@ const ACTION_SYSTEM: &str = r#"You are a Tree-of-Thoughts action planner for an 
 Generate 3-5 candidate actions. For each, score impact, feasibility, speed and confidence from 0-10.
 Then choose one top action, two experiments and one watchlist item.
 Return only JSON:
-{"date":"...","top_action":{"title":"...","why_now":"...","impact":0,"feasibility":0,"speed":0,"confidence":0,"evidence":[]},"experiments":[],"watchlist":[],"summary":"...","model":"..."}
+{"date":"...","candidates":[{"title":"...","why_now":"...","impact":0,"feasibility":0,"speed":0,"confidence":0,"evidence":[]}],"top_action":{"title":"...","why_now":"...","impact":0,"feasibility":0,"speed":0,"confidence":0,"evidence":[]},"experiments":[],"watchlist":[],"summary":"...","model":"..."}
 Every action must cite at least one input story URL when available."#;
 
 const ACTION_USER: &str = "Create a small, concrete, evidence-backed action plan.";
