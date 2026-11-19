@@ -17,7 +17,6 @@ git -C "$tmp" config user.name "github-actions[bot]"
 git -C "$tmp" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 git -C "$tmp" add state.sqlite3
 git -C "$tmp" commit -q -m "state: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-git -C "$tmp" remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
-git -C "$tmp" -c http.extraheader="AUTHORIZATION: bearer ${GITHUB_TOKEN}" \
-  push --quiet --force origin HEAD:state
+git -C "$tmp" remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+git -C "$tmp" push --quiet --force origin HEAD:state
 echo "saved state branch ($(wc -c < data/state.sqlite3) bytes)"
