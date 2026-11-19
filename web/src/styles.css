@@ -1257,6 +1257,33 @@ a:hover {
   gap: 10px;
 }
 
+.load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px 16px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface) 62%, transparent);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.load-more:hover {
+  transform: translateY(-1px);
+  background: var(--surface);
+  color: var(--ink-soft);
+}
+
+.load-more span {
+  color: var(--terracotta-deep);
+}
+
 .signal-card {
   display: grid;
   grid-template-columns: 53px minmax(0, 1fr);

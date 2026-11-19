@@ -301,6 +301,14 @@ function Today(props: {
   const latestBrief = feed.briefs.find((brief) => brief.lang === lang) ?? feed.briefs[0];
   const action = feed.action_plan?.top_action;
   const sourceCount = feed.sources.length;
+  const pageSize = 40;
+  const [visibleCount, setVisibleCount] = useState(pageSize);
+
+  useEffect(() => {
+    setVisibleCount(pageSize);
+  }, [query, minScore]);
+
+  const visibleItems = items.slice(0, visibleCount);
   const communityCount = items.filter((story) => story.sources.some((source) => ["hackernews", "reddit", "x"].includes(source.kind))).length;
   const topTags = [...new Set(items.flatMap((story) => story.tags ?? []))].slice(0, 4);
   return (
@@ -408,7 +416,7 @@ function Today(props: {
             <div className="empty-note">{t("没有符合当前过滤条件的信号。", "No signals match the current filters.")}</div>
           ) : (
             <div className="signal-list">
-              {items.map((story, index) => (
+              {visibleItems.map((story, index) => (
                 <StoryCard
                   key={story.id}
                   story={story}
@@ -419,6 +427,15 @@ function Today(props: {
                   t={t}
                 />
               ))}
+              {visibleCount < items.length && (
+                <button className="load-more" onClick={() => setVisibleCount((count) => count + pageSize)}>
+                  {t(
+                    `再看 ${Math.min(pageSize, items.length - visibleCount)} 条`,
+                    `Show ${Math.min(pageSize, items.length - visibleCount)} more`,
+                  )}
+                  <span>↓</span>
+                </button>
+              )}
             </div>
           )}
         </div>
