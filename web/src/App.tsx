@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { loadBrief, loadFeed } from "./data";
+import PoAvatar from "./PoAvatar";
 import type { Brief, BriefSummary, FeedPayload, Lang, Story } from "./types";
 
 type View = "today" | "briefs" | "sources" | "alerts" | "archive" | "about";
-type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl";
 
 const nav: Array<{ id: View; zh: string; en: string; glyph: string }> = [
   { id: "today", zh: "今日雷达", en: "Today", glyph: "◉" },
@@ -11,7 +11,7 @@ const nav: Array<{ id: View; zh: string; en: string; glyph: string }> = [
   { id: "sources", zh: "信源空间", en: "Sources", glyph: "⌁" },
   { id: "alerts", zh: "高分提醒", en: "Alerts", glyph: "✦" },
   { id: "archive", zh: "时光归档", en: "Archive", glyph: "◫" },
-  { id: "about", zh: "关于 Muse", en: "About", glyph: "?" },
+  { id: "about", zh: "关于 Po", en: "About", glyph: "?" },
 ];
 
 function routeFromHash(): View {
@@ -106,10 +106,10 @@ function App() {
     <div className="app-shell">
       <aside className="spaces-rail">
         <button className="muse-brand" onClick={() => navigate("today")}>
-          <MuseAvatar size="sm" />
+          <PoAvatar size="sm" />
           <span>
             <strong>Muse Radar</strong>
-            <small>intelligence, human pace</small>
+            <small>Po · your companion editor</small>
           </span>
         </button>
 
@@ -171,8 +171,8 @@ function App() {
 
         {loading || !feed ? (
           <div className="muse-loading">
-            <MuseAvatar size="lg" />
-            <span>{t("Muse 正在整理今天的信号…", "Muse is gathering today's signals…")}</span>
+            <PoAvatar size="lg" />
+            <span>{t("Po 正在整理今天的信号…", "Po is gathering today's signals…")}</span>
           </div>
         ) : (
           <>
@@ -216,23 +216,6 @@ function App() {
   );
 }
 
-function MuseAvatar({ size = "md" }: { size?: AvatarSize }) {
-  return (
-    <span className={`muse-avatar ${size}`} aria-hidden="true">
-      <span className="avatar-shadow" />
-      <span className="avatar-face">
-        <span className="avatar-brow left" />
-        <span className="avatar-brow right" />
-        <span className="avatar-eye left" />
-        <span className="avatar-eye right" />
-        <span className="avatar-blush left" />
-        <span className="avatar-blush right" />
-        <span className="avatar-smile" />
-      </span>
-    </span>
-  );
-}
-
 function StatusPill(props: {
   feed: FeedPayload;
   open: boolean;
@@ -251,10 +234,10 @@ function StatusPill(props: {
   return (
     <div className={`status-wrap ${open ? "is-open" : ""}`}>
       <button className="status-pill" onClick={onToggle} aria-expanded={open}>
-        <MuseAvatar size="xs" />
+        <PoAvatar size="xs" />
         <span className="status-spark" />
         <span className="status-copy">
-          <strong>{t("Muse 正在阅读", "Muse is reading")} {activeSources} {t("个信源", "sources")}</strong>
+          <strong>{t("Po 正在阅读", "Po is reading")} {activeSources} {t("个信源", "sources")}</strong>
           <small>{state}</small>
         </span>
         <span className="status-toggle">{open ? "−" : "+"}</span>
@@ -339,7 +322,7 @@ function Today(props: {
             <div className="top-signal">
               <div className="top-signal-meta">
                 <span className="score-chip">{top.score.toFixed(0)}</span>
-                <span>{top.sources?.[0]?.source_name ?? "Muse"}</span>
+                <span>{top.sources?.[0]?.source_name ?? "Po"}</span>
                 <span className="soft-dot" />
                 <span>{timeAgo(top.last_seen_at, lang)}</span>
               </div>
@@ -365,12 +348,12 @@ function Today(props: {
         <div className="hero-avatar-panel">
           <div className="avatar-orbit orbit-one" />
           <div className="avatar-orbit orbit-two" />
-          <MuseAvatar size="xl" />
+          <PoAvatar size="xl" />
           <div className="avatar-caption">
             <span className="soft-dot" />
-            {t("今天也在替你读", "reading so you don't have to")}
+            {t("Po 今天也在替你读", "Po is reading so you don't have to")}
           </div>
-          <div className="avatar-mood">{t("心情：克制地兴奋", "mood: quietly curious")}</div>
+          <div className="avatar-mood">{t("心情：暖融融地专注", "mood: warm and curious")}</div>
         </div>
       </section>
 
@@ -401,7 +384,7 @@ function Today(props: {
             <span className="idea-icon">◌</span>
             <span className="eyebrow">{t("社区温度", "COMMUNITY WEATHER")}</span>
             <h3>{communityCount} {t("条讨论正在发热", "conversations are warm")}</h3>
-            <p>{t("Muse 会把 HN、Reddit 和 X 的不同声部放在同一条故事旁边。", "Muse places HN, Reddit and X voices beside the same story.")}</p>
+            <p>{t("Po 会把 HN、Reddit 和 X 的不同声部放在同一条故事旁边。", "Po places HN, Reddit and X voices beside the same story.")}</p>
             <button className="text-button" onClick={() => navigate("alerts")}>{t("查看高分提醒", "See alerts")} →</button>
           </div>
         </div>
@@ -443,7 +426,7 @@ function Today(props: {
           <ActionCard feed={feed} lang={lang} t={t} />
           <SourcePulse sources={feed.sources} lang={lang} t={t} />
           <div className="soft-note">
-            <MuseAvatar size="sm" />
+            <PoAvatar size="sm" />
             <p>{t("先看为什么重要，再看发生了什么。每一条结论都能回到原文。", "Read why it matters before what happened. Every claim can return to its source.")}</p>
           </div>
         </aside>
@@ -466,12 +449,12 @@ function StoryCard(props: {
     <article className="signal-card">
       <div className="signal-avatar-column">
         <span className="signal-rank">{String(rank).padStart(2, "0")}</span>
-        <MuseAvatar size="sm" />
+        <PoAvatar size="sm" />
       </div>
       <div className="signal-body">
         <div className="signal-topline">
           <span className={`score-chip ${warm}`}>{story.score.toFixed(0)}</span>
-          <span>{story.sources?.[0]?.source_name ?? "Muse source"}</span>
+          <span>{story.sources?.[0]?.source_name ?? "Po source"}</span>
           <span className="soft-dot" />
           <span>{timeAgo(story.last_seen_at, lang)}</span>
           <button className={`bookmark-button ${bookmarked ? "on" : ""}`} onClick={onBookmark} aria-label="Bookmark">
@@ -595,10 +578,10 @@ function Briefs(props: {
         <article className="brief-paper">
           <div className="brief-paper-head">
             <div>
-              <span className="eyebrow">{t("Muse 编辑的简报", "MUSE'S BRIEF")}</span>
+              <span className="eyebrow">{t("Po 编辑的简报", "PO'S BRIEF")}</span>
               <h2>{selected.date}<br /><span>{selected.slot}</span></h2>
             </div>
-            <MuseAvatar size="lg" />
+            <PoAvatar size="lg" />
           </div>
           <div className="brief-summary">
             {selected.executive_summary.map((line, index) => (
@@ -771,15 +754,15 @@ function About({ lang, t }: { lang: Lang; t: (zh: string, en: string) => string 
     <div className="page-stack about-page">
       <section className="about-hero">
         <div>
-          <span className="eyebrow">{t("关于 Muse Radar", "ABOUT MUSE RADAR")}</span>
+          <span className="eyebrow">{t("关于 Po 与 Muse Radar", "ABOUT PO & MUSE RADAR")}</span>
           <h1>{t("工具有可靠性，也可以有体温。", "A tool can be reliable and warm.")}</h1>
-          <p>{t("界面借鉴 Muse 的视觉哲学：稳定原语、温和材质、拟人化陪伴和生成式表达。它不隐藏判断，也不假装自己是人。", "The interface borrows Muse's visual philosophy: stable primitives, warm materials, embodied companionship and generative expression. It does not hide judgment or pretend to be human.")}</p>
+          <p>{t("Po 是 Muse Radar 的陪伴式主编：圆润暖黄的小龙身体、珊瑚色天线和一对会扇动的小翅膀。界面借鉴 Muse 的视觉哲学：稳定原语、温和材质、拟人化陪伴和生成式表达。它不隐藏判断，也不假装自己是人。", "Po is Muse Radar's companion editor: a round honey-gold dragon with a coral antenna and softly fluttering wings. The interface borrows Muse's visual philosophy: stable primitives, warm materials, embodied companionship and generative expression. It does not hide judgment or pretend to be human.")}</p>
         </div>
-        <MuseAvatar size="xl" />
+        <PoAvatar size="xl" />
       </section>
       <div className="primitive-grid">
         {[
-          ["01", t("陪伴式头像", "Embodied avatar"), t("Muse 不是抽象 Logo，而是一个会出现的角色。", "Muse is a character that shows up, not an abstract logo.")],
+          ["01", t("陪伴式头像", "Embodied avatar"), t("Po 不是抽象 Logo，而是一个会眨眼、会陪伴的角色。", "Po is not an abstract logo, but a character that blinks and keeps you company.")],
           ["02", t("状态胶囊", "Status pill"), t("把扫描、评分、简报状态放在一个可展开的温和入口里。", "A gentle, expandable home for scan, score and brief status.")],
           ["03", t("灵感表面", "Ideas surface"), t("把信号转成三个可以带走的小线索。", "Turn signals into three small ideas you can take with you.")],
           ["04", t("生成式空间", "Spaces"), t("导航不是层级菜单，而是一组可停留的情报空间。", "Navigation is a set of rooms, not a deep menu tree.")],

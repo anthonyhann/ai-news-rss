@@ -9,16 +9,27 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Live](https://img.shields.io/badge/Live-Dashboard-d8ff65)](https://anthonyhann.github.io/ai-news-rss/)
 
-Muse Radar is a self-hosted intelligence desk for the AI ecosystem. A Rust core
-collects and deduplicates sources, scores them with an editor model, writes a
-bilingual brief, generates a daily action plan, and delivers high-signal alerts.
-A React dashboard publishes the same data as a static site or an axum-backed
-server.
+Muse Radar is a self-hosted intelligence desk for the AI ecosystem, hosted by
+the original companion character **Po**. A Rust core collects and deduplicates
+sources, scores them with an editor model, writes a bilingual brief, generates
+a daily action plan, and delivers high-signal alerts. A React dashboard
+publishes the same data as a static site or an axum-backed server.
 
 The goal is not more information. The goal is fewer bad judgments and a
 traceable path back to the original source.
 
 ![Muse Radar dashboard](docs/assets/dashboard.png)
+
+## Meet Po
+
+![Po, the companion editor](docs/assets/po.png)
+
+Po is Muse Radar's original companion IP: a round honey-gold dragon with a
+coral heart antenna, softly fluttering wings, and a wagging tail. Its visual
+temperament borrows the round, approachable warmth of Nailong and the
+"antenna companion" feeling of Teletubbies Po, without copying either character.
+The avatar is scalable SVG, blinks, floats, sways its antenna, wags its tail,
+and adapts to both Oat and Dusk themes.
 
 ## Why This Exists
 

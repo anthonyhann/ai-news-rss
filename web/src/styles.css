@@ -23,6 +23,20 @@
   --hot: #bc5c3f;
   --shadow: 0 24px 60px rgba(77, 64, 45, 0.1);
   --shadow-soft: 0 10px 30px rgba(77, 64, 45, 0.07);
+  --po-body-light: #f8da8e;
+  --po-body: #efbd5f;
+  --po-body-deep: #c9862d;
+  --po-cream: #fff1cc;
+  --po-cream-deep: #eed7aa;
+  --po-coral: #db7058;
+  --po-coral-deep: #a94d39;
+  --po-ink: #403226;
+  --po-tongue: #e7817d;
+  --po-antenna-stem: #d2a045;
+  --po-shadow: rgba(75, 53, 30, 0.18);
+  --avatar-glow: rgba(255, 253, 248, 0.78);
+  --avatar-orb: rgba(255, 253, 248, 0.27);
+  --avatar-caption-surface: rgba(255, 253, 248, 0.72);
   --radius-xl: 32px;
   --radius-lg: 26px;
   --radius-md: 19px;
@@ -56,6 +70,20 @@
   --hot: #efad92;
   --shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
   --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.18);
+  --po-body-light: #e9bd63;
+  --po-body: #dca64c;
+  --po-body-deep: #a96f22;
+  --po-cream: #f7e5c2;
+  --po-cream-deep: #d8bf94;
+  --po-coral: #e08c76;
+  --po-coral-deep: #a95743;
+  --po-ink: #29211a;
+  --po-tongue: #df847f;
+  --po-antenna-stem: #c89a46;
+  --po-shadow: rgba(0, 0, 0, 0.28);
+  --avatar-glow: rgba(255, 235, 197, 0.12);
+  --avatar-orb: rgba(255, 235, 197, 0.05);
+  --avatar-caption-surface: rgba(43, 39, 35, 0.78);
 }
 
 * {
@@ -138,162 +166,105 @@ a:hover {
   min-height: 100vh;
 }
 
-/* ---------- Muse avatar ---------- */
+/* ---------- Po companion ---------- */
 
-.muse-avatar {
-  --size: 48px;
+.po-avatar {
+  --size: 50px;
   position: relative;
   display: inline-grid;
   flex: 0 0 auto;
-  place-items: end center;
+  place-items: center;
   width: var(--size);
   height: var(--size);
   isolation: isolate;
 }
 
-.muse-avatar.xs {
-  --size: 28px;
+.po-avatar.xs {
+  --size: 29px;
 }
 
-.muse-avatar.sm {
-  --size: 38px;
+.po-avatar.sm {
+  --size: 40px;
 }
 
-.muse-avatar.md {
-  --size: 50px;
+.po-avatar.md {
+  --size: 52px;
 }
 
-.muse-avatar.lg {
-  --size: 86px;
+.po-avatar.lg {
+  --size: 88px;
 }
 
-.muse-avatar.xl {
-  --size: 166px;
-  animation: avatar-float 6.5s ease-in-out infinite;
+.po-avatar.xl {
+  --size: 178px;
+  animation: po-float 6.5s ease-in-out infinite;
 }
 
-.avatar-shadow {
-  position: absolute;
-  z-index: -1;
-  bottom: 2%;
-  width: 56%;
-  height: 10%;
-  border-radius: 50%;
-  background: rgba(83, 64, 42, 0.2);
-  filter: blur(calc(var(--size) * 0.035));
-}
-
-.avatar-face {
-  position: relative;
-  width: 78%;
-  height: 80%;
-  margin-bottom: 5%;
-  overflow: visible;
-  border: max(1px, calc(var(--size) * 0.012)) solid rgba(91, 71, 47, 0.18);
-  border-radius: 48% 48% 43% 43% / 45% 45% 51% 51%;
-  background:
-    radial-gradient(circle at 36% 20%, rgba(255, 255, 255, 0.72), transparent 28%),
-    linear-gradient(150deg, #f5dfbd 6%, #e9cda6 58%, #d7b58d 100%);
-  box-shadow:
-    inset 0 -6% 12% rgba(128, 90, 50, 0.1),
-    0 5% 14% rgba(86, 61, 35, 0.12);
-}
-
-.avatar-face::before {
-  content: "";
-  position: absolute;
-  top: -2%;
-  left: 8%;
-  width: 84%;
-  height: 33%;
-  border-radius: 52% 52% 40% 40%;
-  background: linear-gradient(145deg, #7d674f, #5e4d3b);
-  clip-path: polygon(0 0, 100% 0, 96% 74%, 85% 48%, 73% 69%, 61% 38%, 47% 64%, 34% 34%, 18% 67%, 6% 45%);
-  opacity: 0.88;
-}
-
-.avatar-face::after {
-  content: "";
-  position: absolute;
-  right: 12%;
-  bottom: 22%;
-  width: 11%;
-  height: 11%;
-  border-radius: 50%;
-  background: rgba(180, 116, 82, 0.15);
-}
-
-.avatar-eye,
-.avatar-brow,
-.avatar-blush,
-.avatar-smile {
-  position: absolute;
+.po-svg {
   display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 5px 10px rgba(94, 62, 25, 0.12));
 }
 
-.avatar-eye {
-  top: 48%;
-  z-index: 2;
-  width: 8%;
-  height: 9%;
-  border-radius: 50%;
-  background: #3e352c;
-  box-shadow: inset 0 18% 0 rgba(255, 255, 255, 0.6);
+.po-ground {
+  filter: blur(1.5px);
+}
+
+.po-antenna {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: po-antenna-sway 4.2s ease-in-out infinite;
+}
+
+.po-tail {
+  transform-box: fill-box;
+  transform-origin: 5% 70%;
+  animation: po-tail-wag 4.8s ease-in-out infinite;
+}
+
+.po-wing-left {
+  transform-box: fill-box;
+  transform-origin: 82% 55%;
+  animation: po-wing-flutter 5.2s ease-in-out infinite;
+}
+
+.po-wing-right {
+  transform-box: fill-box;
+  transform-origin: 18% 55%;
+  animation: po-wing-flutter 5.2s ease-in-out infinite reverse;
+}
+
+.po-eye {
+  transform-box: fill-box;
   transform-origin: center;
-  animation: avatar-blink 6.4s infinite;
+  animation: po-blink 6.4s infinite;
 }
 
-.avatar-eye.left {
-  left: 30%;
+.po-eye-right {
+  animation-delay: 0.06s;
 }
 
-.avatar-eye.right {
-  right: 30%;
-  animation-delay: 0.04s;
+.po-cheek {
+  animation: po-cheek-glow 4.5s ease-in-out infinite;
 }
 
-.avatar-brow {
-  top: 39%;
-  width: 11%;
-  height: 3%;
-  border-radius: 999px;
-  background: rgba(82, 62, 43, 0.56);
+.po-tail-heart {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: po-heart-beat 3.4s ease-in-out infinite;
 }
 
-.avatar-brow.left {
-  left: 28%;
-  transform: rotate(-4deg);
-}
+@media (hover: hover) {
+  .po-avatar:hover .po-wing-left,
+  .po-avatar:hover .po-wing-right {
+    animation-duration: 1.2s;
+  }
 
-.avatar-brow.right {
-  right: 28%;
-  transform: rotate(4deg);
-}
-
-.avatar-blush {
-  top: 60%;
-  width: 12%;
-  height: 6%;
-  border-radius: 50%;
-  background: rgba(200, 102, 78, 0.24);
-  filter: blur(1px);
-}
-
-.avatar-blush.left {
-  left: 18%;
-}
-
-.avatar-blush.right {
-  right: 18%;
-}
-
-.avatar-smile {
-  top: 61%;
-  left: 43%;
-  width: 14%;
-  height: 8%;
-  border-bottom: max(1px, calc(var(--size) * 0.018)) solid #6a4c3a;
-  border-radius: 0 0 50% 50%;
+  .po-avatar:hover .po-antenna {
+    animation-duration: 1.6s;
+  }
 }
 
 /* ---------- Left rail / spaces ---------- */
@@ -987,7 +958,7 @@ a:hover {
   overflow: hidden;
   border-radius: 27px;
   background:
-    radial-gradient(circle at 50% 44%, rgba(255, 253, 248, 0.78), transparent 46%),
+    radial-gradient(circle at 50% 44%, var(--avatar-glow), transparent 46%),
     linear-gradient(155deg, var(--surface-peach), var(--surface-butter));
 }
 
@@ -999,7 +970,7 @@ a:hover {
   width: 190px;
   height: 190px;
   border-radius: 50%;
-  background: rgba(255, 253, 248, 0.27);
+  background: var(--avatar-orb);
   filter: blur(2px);
 }
 
@@ -1031,9 +1002,9 @@ a:hover {
   gap: 7px;
   margin-top: 13px;
   padding: 6px 11px;
-  border: 1px solid rgba(91, 71, 47, 0.12);
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 253, 248, 0.7);
+  background: var(--avatar-caption-surface);
   color: var(--ink-soft);
   font-size: 10px;
   backdrop-filter: blur(8px);
@@ -2042,7 +2013,7 @@ a:hover {
 
 /* ---------- Motion ---------- */
 
-@keyframes avatar-float {
+@keyframes po-float {
   0%,
   100% {
     transform: translateY(0) rotate(-0.5deg);
@@ -2052,7 +2023,7 @@ a:hover {
   }
 }
 
-@keyframes avatar-blink {
+@keyframes po-blink {
   0%,
   91%,
   96%,
@@ -2062,6 +2033,62 @@ a:hover {
   93%,
   94.5% {
     transform: scaleY(0.1);
+  }
+}
+
+@keyframes po-antenna-sway {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(4deg) translateY(-1px);
+  }
+}
+
+@keyframes po-tail-wag {
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes po-wing-flutter {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+
+@keyframes po-cheek-glow {
+  0%,
+  100% {
+    opacity: 0.16;
+  }
+  50% {
+    opacity: 0.28;
+  }
+}
+
+@keyframes po-heart-beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.08);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.05);
   }
 }
 
@@ -2266,7 +2293,7 @@ a:hover {
     align-items: flex-start;
   }
 
-  .about-hero .muse-avatar.xl {
+  .about-hero .po-avatar.xl {
     --size: 116px;
   }
 }
@@ -2355,7 +2382,7 @@ a:hover {
     min-height: 270px;
   }
 
-  .muse-avatar.xl {
+  .po-avatar.xl {
     --size: 138px;
   }
 
@@ -2381,7 +2408,7 @@ a:hover {
     padding: 15px;
   }
 
-  .signal-card .muse-avatar.sm {
+  .signal-card .po-avatar.sm {
     --size: 32px;
   }
 
@@ -2444,7 +2471,7 @@ a:hover {
     display: none;
   }
 
-  .status-pill .muse-avatar.xs {
+  .status-pill .po-avatar.xs {
     --size: 24px;
   }
 }

@@ -9,9 +9,15 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Live](https://img.shields.io/badge/Live-Dashboard-d8ff65)](https://anthonyhann.github.io/ai-news-rss/)
 
-Muse Radar 是一个自托管的 AI 情报台。Rust 核心负责采集、去重、评分、简报和推送；React/Vite 负责可视化；SQLite 保存跨天状态。它不追求“给你更多链接”，而是把全网高信号信息压缩成一份可追溯、可行动、可双语阅读的每日简报。
+Muse Radar 是一个自托管的 AI 情报台，由原创陪伴角色 **Po** 担任主编。Rust 核心负责采集、去重、评分、简报和推送；React/Vite 负责可视化；SQLite 保存跨天状态。它不追求“给你更多链接”，而是把全网高信号信息压缩成一份可追溯、可行动、可双语阅读的每日简报。
 
 ![Muse Radar dashboard](docs/assets/dashboard.png)
+
+## 陪伴角色 Po
+
+![Po, the companion editor](docs/assets/po.png)
+
+Po 是 Muse Radar 的原创陪伴 IP：圆润的暖黄小龙身体、珊瑚色心形天线、会扇动的小翅膀和会摇的尾巴。视觉气质借鉴奶龙的圆润亲和感，以及天线宝宝小波“天线小伙伴”的陪伴意象，但没有复制任何现成角色。头像使用可缩放 SVG 绘制，会眨眼、轻浮、摆天线和摇尾巴，并能自动适配燕麦色与暮色主题。
 
 ## 为什么做这个项目
 
