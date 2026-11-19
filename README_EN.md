@@ -7,6 +7,7 @@
 [![Rust](https://img.shields.io/badge/Rust-1.98.1-orange.svg)](rust-toolchain.toml)
 [![React](https://img.shields.io/badge/React-19-149eca.svg)](web/package.json)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Live](https://img.shields.io/badge/Live-Dashboard-d8ff65)](https://anthonyhann.github.io/ai-news-rss/)
 
 AI Radar is a self-hosted intelligence desk for the AI ecosystem. A Rust core
 collects and deduplicates sources, scores them with an editor model, writes a
