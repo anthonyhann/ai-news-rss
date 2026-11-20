@@ -282,6 +282,10 @@ If the account has no X List, `X_LIST_URL` may be set to `https://x.com/home` to
 collect the authenticated home timeline; the scoring layer filters non-AI
 content afterwards.
 
+Use `TWITTER_PROXY` only for local networks that need a proxy. Never store a
+`127.0.0.1:7890`-style local address as a GitHub Actions Secret; the hosted
+runner cannot reach it.
+
 ### 4. Feishu delivery
 
 1. In the target Feishu group, open Settings → Group Bots → Add custom bot.

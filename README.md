@@ -233,6 +233,8 @@ X 单源失败只会记录健康状态，不会阻断 RSS/HN/Reddit/GitHub。可
 
 如果账号没有现成的 X List，也可以把 `X_LIST_URL` 设为 `https://x.com/home`，worker 会采集该登录账号的首页时间线，再由 AI 评分层过滤非 AI 内容。
 
+`TWITTER_PROXY` 应只在本地需要代理时填写；不要把 `127.0.0.1:7890` 这类本机地址配置成 GitHub Actions Secret，Runner 无法访问它。
+
 ### 4. 配置飞书推送
 
 1. 进入飞书目标群 → 设置 → 群机器人 → 添加自定义机器人。

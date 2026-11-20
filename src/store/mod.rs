@@ -288,7 +288,9 @@ impl Store {
 
     pub async fn stories_needing_score(&self, limit: usize) -> Result<Vec<Story>> {
         let rows = sqlx::query(
-            r#"SELECT payload_json FROM stories WHERE score <= 0
+            r#"SELECT payload_json FROM stories
+               WHERE score <= 0
+                 AND COALESCE(json_extract(payload_json, '$.score'), 0) <= 0
                ORDER BY last_seen_at DESC LIMIT ?1"#,
         )
         .bind(limit as i64)

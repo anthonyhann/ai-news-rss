@@ -334,20 +334,36 @@ impl OpenAiLlm {
                 {"role": "user", "content": user}
             ]
         });
-        let response = self
-            .client
-            .post(url)
-            .bearer_auth(&self.api_key)
-            .json(&body)
-            .send()
-            .await?
-            .error_for_status()?;
-        let value: Value = response.json().await?;
-        value
-            .pointer("/choices/0/message/content")
-            .and_then(|v| v.as_str())
-            .map(str::to_string)
-            .context("LLM response missing choices[0].message.content")
+        let mut last_error = None;
+        for attempt in 0..3u32 {
+            match self
+                .client
+                .post(&url)
+                .bearer_auth(&self.api_key)
+                .json(&body)
+                .send()
+                .await
+            {
+                Ok(response) => {
+                    let response = response.error_for_status()?;
+                    let value: Value = response.json().await?;
+                    return value
+                        .pointer("/choices/0/message/content")
+                        .and_then(|v| v.as_str())
+                        .map(str::to_string)
+                        .context("LLM response missing choices[0].message.content");
+                }
+                Err(error) if (error.is_timeout() || error.is_connect()) && attempt < 2 => {
+                    tracing::warn!(attempt = attempt + 1, %error, "LLM transport error; retrying");
+                    tokio::time::sleep(std::time::Duration::from_secs(1 << attempt)).await;
+                    last_error = Some(error);
+                }
+                Err(error) => return Err(error.into()),
+            }
+        }
+        Err(last_error
+            .expect("retry loop always records its last transport error")
+            .into())
     }
 
     fn parse_json<T: for<'de> Deserialize<'de>>(text: &str) -> Result<T> {

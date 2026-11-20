@@ -43,5 +43,5 @@ sources:
     tier: 2
     lang: en
     category: social
-    max_items: 100
+    max_items: 40
     enabled: true

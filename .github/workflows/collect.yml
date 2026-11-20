@@ -58,6 +58,11 @@ jobs:
           chmod +x /usr/local/bin/yt-dlp
       - name: Build Rust binary
         run: cargo build --release
+      - name: Reset manual source health
+        if: ${{ inputs.only != '' }}
+        env:
+          ONLY_SOURCE: ${{ inputs.only }}
+        run: ./target/release/ainews sources reset "$ONLY_SOURCE"
       - name: Collect and score
         env:
           ONLY_SOURCE: ${{ inputs.only }}
