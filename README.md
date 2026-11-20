@@ -230,6 +230,24 @@ X 的自动化规则和风控会变化。生产环境建议使用专用小号或
 
 所需 Secrets 见 `.env.example` 和各 workflow 文件。永远不要提交 `.env`、`cookies.json`、`data/` 或 `web/public/data/`。
 
+### 启用真实模型、X 与飞书
+
+工作流会在以下 Secrets 就绪后自动启用对应能力：
+
+- **真实模型**：`LLM_BASE_URL`、`LLM_API_KEY`、`LLM_SCORING_MODEL`、`LLM_EDITOR_MODEL`。没有 `LLM_API_KEY` 时仍会运行，但使用确定性 mock scorer。
+- **X 采集**：`X_LIST_URL`、`TWITTER_AUTH_TOKEN`、`TWITTER_CT0`，以及可选的 `TWITTER_PROXY`。仅设置 List URL 不足以通过登录检查。
+- **飞书推送**：`FEISHU_WEBHOOK_URL`。`config/app.toml` 中 `[delivery.feishu] enabled = true` 已开启。
+
+在本地用 GitHub CLI 安全录入（命令会提示输入值，不会写入 shell 历史）：
+
+```bash
+gh secret set LLM_API_KEY --repo anthonyhann/ai-news-rss
+gh secret set X_LIST_URL --repo anthonyhann/ai-news-rss
+gh secret set FEISHU_WEBHOOK_URL --repo anthonyhann/ai-news-rss
+```
+
+录入后运行一次 `workflow_dispatch` 的 Collect 工作流即可验证真实采集、评分与飞书推送。
+
 ## Docker
 
 ```bash

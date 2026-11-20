@@ -33,7 +33,7 @@ enabled = false
 url_env = "WECOM_WEBHOOK_URL"
 
 [delivery.feishu]
-enabled = false
+enabled = true
 url_env = "FEISHU_WEBHOOK_URL"
 
 [delivery.dingtalk]

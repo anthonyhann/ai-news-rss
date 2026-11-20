@@ -282,6 +282,31 @@ YouTube network access may still cost money.
 Required repository secrets are documented in `.env.example` and the workflow
 files. Never commit `.env`, `cookies.json`, `data/`, or `web/public/data/`.
 
+### Enabling the real model, X and Feishu
+
+Each capability switches on when its secrets are present:
+
+- **Real model:** `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_SCORING_MODEL`,
+  `LLM_EDITOR_MODEL`. Without `LLM_API_KEY`, collection still runs with the
+  deterministic mock scorer.
+- **X collection:** `X_LIST_URL`, `TWITTER_AUTH_TOKEN`, `TWITTER_CT0`, and
+  optionally `TWITTER_PROXY`. A List URL alone is not enough to pass the login
+  check.
+- **Feishu delivery:** `FEISHU_WEBHOOK_URL`. The
+  `[delivery.feishu] enabled = true` flag is already set in `config/app.toml`.
+
+Store them safely with the GitHub CLI. Each command prompts for the value
+without writing it to shell history:
+
+```bash
+gh secret set LLM_API_KEY --repo anthonyhann/ai-news-rss
+gh secret set X_LIST_URL --repo anthonyhann/ai-news-rss
+gh secret set FEISHU_WEBHOOK_URL --repo anthonyhann/ai-news-rss
+```
+
+After adding them, run the Collect workflow once with `workflow_dispatch` to
+verify real collection, scoring and Feishu delivery.
+
 ## Docker
 
 ```bash

@@ -28,6 +28,7 @@ dependencies = [
  "chrono",
  "clap",
  "dom_smoothie",
+ "dotenvy",
  "feed-rs",
  "futures",
  "lettre",

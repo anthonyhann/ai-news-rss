@@ -70,6 +70,7 @@ enum Commands {
 
 #[tokio::main]
 async fn main() {
+    let _ = dotenvy::dotenv();
     init_tracing();
     if let Err(error) = run_cli().await {
         eprintln!("error: {error:#}");
