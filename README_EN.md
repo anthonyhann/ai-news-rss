@@ -1,4 +1,4 @@
-# Muse Radar · AI News RSS
+# Po Radar · AI News RSS
 
 **English** | [中文](README.md)
 
@@ -9,7 +9,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Live](https://img.shields.io/badge/Live-Dashboard-d8ff65)](https://anthonyhann.github.io/ai-news-rss/)
 
-Muse Radar is a self-hosted intelligence desk for the AI ecosystem, hosted by
+Po Radar is a self-hosted intelligence desk for the AI ecosystem, hosted by
 the original companion character **Po**. A Rust core collects and deduplicates
 sources, scores them with an editor model, writes a bilingual brief, generates
 a daily action plan, and delivers high-signal alerts. A React dashboard
@@ -18,7 +18,10 @@ publishes the same data as a static site or an axum-backed server.
 The goal is not more information. The goal is fewer bad judgments and a
 traceable path back to the original source.
 
-![Muse Radar dashboard](docs/assets/dashboard.png)
+> First-time setup starts with the [Configuration SOP](#configuration-sop),
+> which covers secrets, sources, verification, and troubleshooting in order.
+
+![Po Radar dashboard](docs/assets/dashboard.png)
 
 ## Meet Po
 
@@ -49,7 +52,7 @@ keeping the warmth of a plush collectible.
 
 AI news is fragmented across lab blogs, X, YouTube, Reddit, Hacker News,
 GitHub, Telegram, WeChat RSS bridges, and newsletters. Most aggregators stop at
-“here are more links.” Muse Radar adds an editorial layer:
+“here are more links.” Po Radar adds an editorial layer:
 
 - **Deterministic first:** URL normalization, content hashes, and 64-bit
   SimHash remove exact and near-duplicate stories.
@@ -86,7 +89,7 @@ summary. The editor selects one primary action, two reversible experiments,
 and one watch item; every recommendation links back to evidence. The UI exposes
 the auditable scoring summary without revealing hidden reasoning.
 
-![Muse Radar action plan](docs/assets/action-plan.png)
+![Po Radar action plan](docs/assets/action-plan.png)
 
 ## Source Coverage
 
@@ -181,38 +184,229 @@ cargo run -- brief --slot evening
 cargo run -- export
 ```
 
-## Configuration
+## Configuration SOP
 
-The runtime configuration lives in `config/app.toml`. Secrets belong in `.env`
-or GitHub Actions secrets.
+Goal: go from a fresh checkout to a working local pipeline with a real model,
+X collection, Feishu delivery, and automated GitHub Actions deployment. Follow
+the steps in order.
 
-```dotenv
-# Any OpenAI-compatible endpoint
-LLM_BASE_URL=https://api.deepseek.com/v1
-LLM_API_KEY=
-LLM_SCORING_MODEL=
-LLM_EDITOR_MODEL=
+### 0. Configuration file map
 
-# X List collector
-X_LIST_URL=https://x.com/i/lists/YOUR_LIST_ID
-TWITTER_AUTH_TOKEN=
-TWITTER_CT0=
-TWITTER_PROXY=
+| File or directory | Purpose | Commit? |
+|---|---|---|
+| `.env.example` | Names-only template for all secrets | Yes; never add real values |
+| `.env` | Local secret values; loaded automatically by the CLI | No; ignored by Git |
+| `config/app.toml` | Timezone, model budget, scoring thresholds, delivery switches, browser settings | Yes |
+| `config/sources/*.yaml` | Source catalog grouped by RSS, community, YouTube, WeChat and X | Yes |
+| `config/prompts/*.md` | Scoring, dedup, editor, bilingual and action prompts | Yes |
+| `.github/workflows/*.yml` | Collection, digest, Pages and CI schedules | Yes |
 
-# WeChat RSS bridge
-WECHAT_RSS_BASE=
+`.env`, `.env.*`, `cookies.json`, `storage-state*.json`, `*.pem`, and `*.key`
+are ignored. GitHub Secrets remain encrypted in GitHub and never enter the
+repository or Pages artifacts.
 
-# Delivery
-WECOM_WEBHOOK_URL=
-FEISHU_WEBHOOK_URL=
-DINGTALK_WEBHOOK_URL=
-TELEGRAM_BOT_TOKEN=
-TELEGRAM_CHAT_ID=
-EMAIL_PASSWORD=
+### 1. First-time setup
+
+```bash
+cp .env.example .env
+chmod 600 .env
+pnpm --dir web install
+pnpm --dir browser-worker install
+cargo run -- doctor
 ```
 
-When no LLM is configured, fixture and `ALLOW_DEGRADED=true` runs use a
-deterministic mock scorer. Production briefs should use a real model.
+`doctor` should report Node, the Playwright worker, and `yt-dlp` as available.
+`llm.configured=false` is expected until `LLM_API_KEY` is set.
+
+### 2. LLM configuration
+
+Edit `.env`:
+
+```dotenv
+LLM_BASE_URL=https://api.deepseek.com/v1
+LLM_API_KEY=sk-YOUR_KEY
+LLM_SCORING_MODEL=deepseek-chat
+LLM_EDITOR_MODEL=deepseek-chat
+```
+
+Get `LLM_API_KEY` from the [DeepSeek console](https://platform.deepseek.com/api_keys):
+create an API key and copy the `sk-...` value. The project is not tied to a
+vendor; for another OpenAI-compatible endpoint, change the base URL and both
+model names together.
+
+```bash
+cargo run -- doctor | jq '.llm'
+```
+
+`"configured": true` means the real model path is active. Without an API key,
+collection still runs with `mock-editor`; do not treat those briefs as
+production output.
+
+Tune `max_items_per_run`, `max_editor_items`, `max_tokens_per_run`, and
+`temperature` in `[ai]` after the first successful run.
+
+### 3. X collection
+
+1. Create or open the target AI-builder List in X **Lists** and add accounts.
+2. Copy the list URL, for example `https://x.com/i/lists/1234567890123456789`.
+3. Log in to `x.com` with an account that can access the List.
+4. Open DevTools → Application → Storage → Cookies → `https://x.com`, then
+   copy `auth_token` and `ct0`.
+5. Add the values to `.env`:
+
+```dotenv
+X_LIST_URL=https://x.com/i/lists/1234567890123456789
+TWITTER_AUTH_TOKEN=YOUR_AUTH_TOKEN
+TWITTER_CT0=YOUR_CT0
+TWITTER_PROXY=
+```
+
+Private Lists require cookies from an account with access. Expired cookies
+produce `X browser session is not logged in`. Set `TWITTER_PROXY` only when
+needed. Never commit or share the cookies.
+
+```bash
+cargo run -- collect --only x-ai-builders
+cargo run -- sources check
+```
+
+X failures are isolated to the source and do not block RSS/HN/Reddit/GitHub.
+`[browser]` in `config/app.toml` controls `max_scrolls`, `scroll_delay_ms`, and
+`timeout_ms`; avoid overly aggressive values.
+
+### 4. Feishu delivery
+
+1. In the target Feishu group, open Settings → Group Bots → Add custom bot.
+2. Copy the Webhook, for example
+   `https://open.feishu.cn/open-apis/bot/v2/hook/YOUR_HOOK`.
+3. The current adapter does not sign requests. Use a custom keyword or IP
+   allowlist; `AI` is a practical keyword because alerts and briefs include it.
+4. Add it to `.env`:
+
+```dotenv
+FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/YOUR_HOOK
+```
+
+`[delivery.feishu] enabled = true` is already set. For other channels, enable
+their sections and provide the matching URL, token, or SMTP values.
+
+Optional connectivity test:
+
+```bash
+set -a; . ./.env; set +a
+curl -fsS -X POST "$FEISHU_WEBHOOK_URL" \
+  -H 'Content-Type: application/json' \
+  -d '{"msg_type":"text","content":{"text":"AI Po Radar configuration test"}}'
+```
+
+### 5. GitHub Actions Secrets
+
+Never put real values in workflow YAML. Use the GitHub CLI; it prompts for each
+value interactively:
+
+```bash
+gh secret set LLM_BASE_URL --repo anthonyhann/ai-news-rss
+gh secret set LLM_API_KEY --repo anthonyhann/ai-news-rss
+gh secret set LLM_SCORING_MODEL --repo anthonyhann/ai-news-rss
+gh secret set LLM_EDITOR_MODEL --repo anthonyhann/ai-news-rss
+gh secret set X_LIST_URL --repo anthonyhann/ai-news-rss
+gh secret set TWITTER_AUTH_TOKEN --repo anthonyhann/ai-news-rss
+gh secret set TWITTER_CT0 --repo anthonyhann/ai-news-rss
+gh secret set TWITTER_PROXY --repo anthonyhann/ai-news-rss
+gh secret set FEISHU_WEBHOOK_URL --repo anthonyhann/ai-news-rss
+```
+
+Verify names only:
+
+```bash
+gh secret list --repo anthonyhann/ai-news-rss
+```
+
+### 6. Sources, thresholds and prompts
+
+Add a unique source ID in the relevant YAML file:
+
+```yaml
+sources:
+  - id: example-ai-blog
+    kind: rss
+    name: Example AI Blog
+    url: https://example.com/feed.xml
+    tier: 2
+    lang: en
+    category: model
+    max_items: 20
+    enabled: true
+```
+
+Use `enabled: false` to keep a source in the catalog without collecting it.
+After five consecutive failures a source is skipped; clear the counter after
+fixing it:
+
+```bash
+cargo run -- sources reset example-ai-blog
+```
+
+Important `[pipeline]` settings:
+
+- `digest_score`: minimum score for a brief, default 60.
+- `alert_score` / `alert_confidence`: instant alert threshold, default 90 / 0.80.
+- `max_alerts_per_run`: default 3.
+- `dedup_days`, `simhash_hamming`, `title_jaccard`: cross-day dedup strictness.
+- `languages`: brief languages.
+
+Prompts live in `config/prompts/`. Changes to `score.md`, `dedup.md`,
+`brief.md`, or `action.md` affect the next model call; test with fixtures or a
+single source before a full run.
+
+### 7. Verification order
+
+```bash
+# 1. Dependencies and configuration
+cargo run -- doctor
+cargo run -- sources count
+cargo run -- sources check
+
+# 2. One network source
+cargo run -- collect --only openai-blog
+
+# 3. Full collection and scoring
+cargo run -- run --no-brief
+
+# 4. Brief and action plan
+cargo run -- brief --slot morning
+
+# 5. Export and preview
+cargo run -- export
+pnpm --dir web build
+pnpm --dir web preview
+```
+
+Inspect `web/public/data/latest.json` and `actions.json` for `action_plan`,
+briefs, and source links. For Actions, use `workflow_dispatch`: check Collect,
+then Digest, then the Pages deployment.
+
+### 8. Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `configured=false` or `mock-editor` | Missing `LLM_API_KEY` or endpoint/model | Fill `.env`, run `doctor` |
+| `X browser session is not logged in` | Expired cookies or no access to a private List | Refresh `auth_token` / `ct0` |
+| X health failure while other sources work | X source isolated | Check List URL, cookies and proxy |
+| No Feishu message | Missing Webhook, keyword/signature mismatch | Check `FEISHU_WEBHOOK_URL` and bot security |
+| No brief | Nothing reached `digest_score`, or no model | Inspect run statistics and score logs |
+| Source auto-disabled | Five consecutive failures | Fix source, run `sources reset` |
+| Actions cannot write `state` | Missing `contents: write` or branch protection | Check workflow permissions |
+| Local `.env` changes ignored | Not started from repo root or empty variables | Restart the command from root |
+
+### 9. Security rules
+
+- Put real values only in `.env` or GitHub Secrets.
+- Check `git status` and `git diff` before committing; no `.env`, cookies,
+  Webhook URLs, or API keys may appear.
+- Prefer a dedicated X account or official API over personal-account cookies.
+- Rotate `LLM_API_KEY`, X cookies, Feishu Webhook, and SMTP passwords regularly.
+- Revoke a leaked key first, then update the corresponding Secret.
 
 ## Sources
 
@@ -282,30 +476,9 @@ YouTube network access may still cost money.
 Required repository secrets are documented in `.env.example` and the workflow
 files. Never commit `.env`, `cookies.json`, `data/`, or `web/public/data/`.
 
-### Enabling the real model, X and Feishu
-
-Each capability switches on when its secrets are present:
-
-- **Real model:** `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_SCORING_MODEL`,
-  `LLM_EDITOR_MODEL`. Without `LLM_API_KEY`, collection still runs with the
-  deterministic mock scorer.
-- **X collection:** `X_LIST_URL`, `TWITTER_AUTH_TOKEN`, `TWITTER_CT0`, and
-  optionally `TWITTER_PROXY`. A List URL alone is not enough to pass the login
-  check.
-- **Feishu delivery:** `FEISHU_WEBHOOK_URL`. The
-  `[delivery.feishu] enabled = true` flag is already set in `config/app.toml`.
-
-Store them safely with the GitHub CLI. Each command prompts for the value
-without writing it to shell history:
-
-```bash
-gh secret set LLM_API_KEY --repo anthonyhann/ai-news-rss
-gh secret set X_LIST_URL --repo anthonyhann/ai-news-rss
-gh secret set FEISHU_WEBHOOK_URL --repo anthonyhann/ai-news-rss
-```
-
-After adding them, run the Collect workflow once with `workflow_dispatch` to
-verify real collection, scoring and Feishu delivery.
+Secret acquisition, GitHub configuration, and verification are consolidated in
+the **Configuration SOP** above. Real values belong only in `.env` or GitHub
+Secrets; the repository tracks only the key-free `.env.example`.
 
 ## Docker
 

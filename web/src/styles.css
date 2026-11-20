@@ -253,7 +253,7 @@ a:hover {
   backdrop-filter: blur(22px);
 }
 
-.muse-brand {
+.po-brand {
   display: flex;
   align-items: center;
   gap: 11px;
@@ -266,24 +266,24 @@ a:hover {
   cursor: pointer;
 }
 
-.muse-brand:hover {
+.po-brand:hover {
   background: color-mix(in srgb, var(--surface) 72%, transparent);
 }
 
-.muse-brand > span:last-child {
+.po-brand > span:last-child {
   display: flex;
   min-width: 0;
   flex-direction: column;
   line-height: 1.18;
 }
 
-.muse-brand strong {
+.po-brand strong {
   color: var(--ink);
   font-size: 16px;
   letter-spacing: -0.025em;
 }
 
-.muse-brand small {
+.po-brand small {
   overflow: hidden;
   color: var(--faint);
   font-size: 10px;
@@ -435,12 +435,12 @@ a:hover {
 
 /* ---------- Main shell / top bar ---------- */
 
-.muse-main {
+.po-main {
   min-width: 0;
   padding: 0 34px 60px;
 }
 
-.muse-topbar {
+.po-topbar {
   position: sticky;
   top: 0;
   z-index: 30;
@@ -664,7 +664,7 @@ a:hover {
 
 /* ---------- Shared page elements ---------- */
 
-.muse-loading {
+.po-loading {
   display: flex;
   min-height: 70vh;
   flex-direction: column;
@@ -1142,7 +1142,7 @@ a:hover {
   min-width: 0;
 }
 
-.muse-toolbar {
+.po-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1155,7 +1155,7 @@ a:hover {
   box-shadow: var(--shadow-soft);
 }
 
-.muse-search {
+.po-search {
   display: flex;
   min-width: 0;
   flex: 1;
@@ -1165,7 +1165,7 @@ a:hover {
   color: var(--faint);
 }
 
-.muse-search input {
+.po-search input {
   width: 100%;
   min-width: 0;
   padding: 6px 0;
@@ -1176,7 +1176,7 @@ a:hover {
   font-size: 12px;
 }
 
-.muse-search input::placeholder {
+.po-search input::placeholder {
   color: var(--faint);
 }
 
@@ -2151,7 +2151,7 @@ a:hover {
     grid-template-columns: 228px minmax(0, 1fr);
   }
 
-  .muse-main {
+  .po-main {
     padding-inline: 24px;
   }
 
@@ -2222,12 +2222,12 @@ a:hover {
     background: color-mix(in srgb, var(--canvas) 92%, transparent);
   }
 
-  .muse-brand {
+  .po-brand {
     width: auto;
     padding: 4px;
   }
 
-  .muse-brand > span:last-child {
+  .po-brand > span:last-child {
     display: none;
   }
 
@@ -2266,11 +2266,11 @@ a:hover {
     font-size: 11px;
   }
 
-  .muse-main {
+  .po-main {
     padding: 0 18px 44px;
   }
 
-  .muse-topbar {
+  .po-topbar {
     padding-top: 12px;
   }
 
@@ -2342,11 +2342,11 @@ a:hover {
     position: relative;
   }
 
-  .muse-main {
+  .po-main {
     padding-inline: 13px;
   }
 
-  .muse-topbar {
+  .po-topbar {
     gap: 8px;
   }
 
@@ -2406,7 +2406,7 @@ a:hover {
     padding: 14px;
   }
 
-  .muse-toolbar {
+  .po-toolbar {
     align-items: stretch;
     flex-direction: column;
   }

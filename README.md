@@ -1,4 +1,4 @@
-# Muse Radar · AI News RSS
+# Po Radar · AI News RSS
 
 **中文** | [English](README_EN.md)
 
@@ -9,9 +9,11 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Live](https://img.shields.io/badge/Live-Dashboard-d8ff65)](https://anthonyhann.github.io/ai-news-rss/)
 
-Muse Radar 是一个自托管的 AI 情报台，由原创陪伴角色 **Po** 担任主编。Rust 核心负责采集、去重、评分、简报和推送；React/Vite 负责可视化；SQLite 保存跨天状态。它不追求“给你更多链接”，而是把全网高信号信息压缩成一份可追溯、可行动、可双语阅读的每日简报。
+Po Radar 是一个自托管的 AI 情报台，由原创陪伴角色 **Po** 担任主编。Rust 核心负责采集、去重、评分、简报和推送；React/Vite 负责可视化；SQLite 保存跨天状态。它不追求“给你更多链接”，而是把全网高信号信息压缩成一份可追溯、可行动、可双语阅读的每日简报。
 
-![Muse Radar dashboard](docs/assets/dashboard.png)
+> 第一次部署建议直接阅读 [配置 SOP](#配置-sop)，按顺序完成密钥、信源、验收和排障。
+
+![Po Radar dashboard](docs/assets/dashboard.png)
 
 ## 陪伴角色 Po
 
@@ -31,7 +33,7 @@ Po 采用项目提供的 IP 设定图：柑橘橙绒毛、奶油色脸和肚皮�
 
 ## 为什么做这个项目
 
-AI 信息散落在实验室博客、X、YouTube、Reddit、Hacker News、GitHub、Telegram、微信公众号 RSS 桥和 Newsletter 里。普通聚合器通常停在“这里还有更多链接”，Muse Radar 增加了一层编辑判断：
+AI 信息散落在实验室博客、X、YouTube、Reddit、Hacker News、GitHub、Telegram、微信公众号 RSS 桥和 Newsletter 里。普通聚合器通常停在“这里还有更多链接”，Po Radar 增加了一层编辑判断：
 
 - **先做确定性处理**：URL 规范化、内容哈希、64 位 SimHash，先清掉明显重复和近重复。
 - **再做模型事件合并**：由模型判断 `same_event`、`follow_up`、`different_event`，避免把同一发布拆成多条。
@@ -59,7 +61,7 @@ AI 信息散落在实验室博客、X、YouTube、Reddit、Hacker News、GitHub�
 
 每日简报不只给结论，还会保留候选行动与四维评分摘要。系统选择一个主行动、两个可逆实验和一个观察项，每条建议都能回到证据链接；界面只展示可审计的评分摘要，不暴露隐藏推理。
 
-![Muse Radar action plan](docs/assets/action-plan.png)
+![Po Radar action plan](docs/assets/action-plan.png)
 
 ## 信源覆盖
 
@@ -149,36 +151,208 @@ cargo run -- brief --slot evening
 cargo run -- export
 ```
 
-## 配置
+## 配置 SOP
 
-运行配置在 `config/app.toml`。密钥放在 `.env` 或 GitHub Actions Secrets。
+目标：从空仓库开始，完成本地可运行、真实模型可用、X 可采集、飞书可推送、GitHub Actions 可部署。建议严格按顺序执行。
 
-```dotenv
-# 任意 OpenAI-compatible 接口
-LLM_BASE_URL=https://api.deepseek.com/v1
-LLM_API_KEY=
-LLM_SCORING_MODEL=
-LLM_EDITOR_MODEL=
+### 0. 配置文件地图
 
-# X List 采集
-X_LIST_URL=https://x.com/i/lists/YOUR_LIST_ID
-TWITTER_AUTH_TOKEN=
-TWITTER_CT0=
-TWITTER_PROXY=
+| 文件或目录 | 作用 | 是否提交 |
+|---|---|---|
+| `.env.example` | 所有密钥名称的模板 | 提交，不能填真实值 |
+| `.env` | 本地真实密钥，CLI 启动时自动加载 | 不提交，已被 Git 忽略 |
+| `config/app.toml` | 时区、模型预算、评分阈值、推送开关、浏览器参数 | 提交 |
+| `config/sources/*.yaml` | 信源目录；按 RSS、社区、YouTube、微信、X 分类 | 提交 |
+| `config/prompts/*.md` | 评分、去重、主编、双语、行动建议提示词 | 提交 |
+| `.github/workflows/*.yml` | 采集、简报、Pages 和 CI 调度 | 提交 |
 
-# 微信公众号 RSS 桥
-WECHAT_RSS_BASE=
+`.env`、`.env.*`、`cookies.json`、`storage-state*.json`、`*.pem`、`*.key` 已被 `.gitignore` 排除。GitHub Secrets 以加密形式保存在 GitHub，不会进入仓库或 Pages 静态文件。
 
-# 推送
-WECOM_WEBHOOK_URL=
-FEISHU_WEBHOOK_URL=
-DINGTALK_WEBHOOK_URL=
-TELEGRAM_BOT_TOKEN=
-TELEGRAM_CHAT_ID=
-EMAIL_PASSWORD=
+### 1. 首次初始化
+
+```bash
+cp .env.example .env
+chmod 600 .env
+pnpm --dir web install
+pnpm --dir browser-worker install
+cargo run -- doctor
 ```
 
-没有配置 LLM 时，fixture 和 `ALLOW_DEGRADED=true` 会使用确定性的 mock scorer。生产简报应配置真实模型。
+`doctor` 应显示 Node、Playwright worker、`yt-dlp` 可用，并列出信源数量。刚初始化时 `llm.configured=false` 是正常的，配置下文的 `LLM_API_KEY` 后会变为 `true`。
+
+### 2. 配置 LLM
+
+编辑 `.env`：
+
+```dotenv
+LLM_BASE_URL=https://api.deepseek.com/v1
+LLM_API_KEY=sk-YOUR_KEY
+LLM_SCORING_MODEL=deepseek-chat
+LLM_EDITOR_MODEL=deepseek-chat
+```
+
+获取 `LLM_API_KEY`：登录 [DeepSeek 开放平台](https://platform.deepseek.com/api_keys) → 创建 API Key → 复制 `sk-...`。项目不绑定厂商，也可以换用任意 OpenAI-compatible 接口，只要同时修改 `LLM_BASE_URL` 和两个模型名。
+
+验证：
+
+```bash
+cargo run -- doctor | jq '.llm'
+```
+
+看到 `"configured": true` 即配置成功。没有 `LLM_API_KEY` 时，采集仍会运行，但评分和简报使用 `mock-editor`，不能当作生产结果。
+
+可在 `config/app.toml` 的 `[ai]` 调整成本：`max_items_per_run`、`max_editor_items`、`max_tokens_per_run` 和 `temperature`。建议先用默认值跑通，再根据 token 账单收紧。
+
+### 3. 配置 X 采集
+
+1. 在 X 的 **Lists** 中新建或打开目标 AI Builder 列表，把需要追踪的账号加入列表。
+2. 复制列表 URL，例如 `https://x.com/i/lists/1234567890123456789`。
+3. 用有权限访问该列表的账号登录 `x.com`。
+4. 打开浏览器开发者工具 → Application → Storage → Cookies → `https://x.com`，复制 `auth_token` 和 `ct0`。
+5. 在 `.env` 中填写：
+
+```dotenv
+X_LIST_URL=https://x.com/i/lists/1234567890123456789
+TWITTER_AUTH_TOKEN=YOUR_AUTH_TOKEN
+TWITTER_CT0=YOUR_CT0
+TWITTER_PROXY=
+```
+
+私有列表必须使用同一账号的 Cookie；Cookie 失效后会报 `X browser session is not logged in`。如需代理，填写 `TWITTER_PROXY`。不建议把 Cookie 交给第三方，也不要提交到仓库。
+
+验证：
+
+```bash
+cargo run -- collect --only x-ai-builders
+cargo run -- sources check
+```
+
+X 单源失败只会记录健康状态，不会阻断 RSS/HN/Reddit/GitHub。可在 `config/app.toml` 的 `[browser]` 调整 `max_scrolls`、`scroll_delay_ms`、`timeout_ms`；不要盲目增大，以免触发风控。
+
+### 4. 配置飞书推送
+
+1. 进入飞书目标群 → 设置 → 群机器人 → 添加自定义机器人。
+2. 复制 Webhook，例如 `https://open.feishu.cn/open-apis/bot/v2/hook/YOUR_HOOK`。
+3. 当前适配器不发送签名。安全设置请选择“自定义关键词”或 IP 白名单；推荐关键词填 `AI`，因为高分提醒和简报正文都包含该词。
+4. 写入 `.env`：
+
+```dotenv
+FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/YOUR_HOOK
+```
+
+`config/app.toml` 已设置 `[delivery.feishu] enabled = true`。启用其他渠道时，分别设置对应 `enabled = true` 并配置 `.env` 中的 URL、Token 或 SMTP 参数。
+
+可选连通性测试：
+
+```bash
+set -a; . ./.env; set +a
+curl -fsS -X POST "$FEISHU_WEBHOOK_URL" \
+  -H 'Content-Type: application/json' \
+  -d '{"msg_type":"text","content":{"text":"AI Po Radar 配置测试"}}'
+```
+
+### 5. 同步 GitHub Actions Secrets
+
+不要把真实值写进 workflow YAML。使用 GitHub CLI，命令会交互式提示输入值：
+
+```bash
+gh secret set LLM_BASE_URL --repo anthonyhann/ai-news-rss
+gh secret set LLM_API_KEY --repo anthonyhann/ai-news-rss
+gh secret set LLM_SCORING_MODEL --repo anthonyhann/ai-news-rss
+gh secret set LLM_EDITOR_MODEL --repo anthonyhann/ai-news-rss
+gh secret set X_LIST_URL --repo anthonyhann/ai-news-rss
+gh secret set TWITTER_AUTH_TOKEN --repo anthonyhann/ai-news-rss
+gh secret set TWITTER_CT0 --repo anthonyhann/ai-news-rss
+gh secret set TWITTER_PROXY --repo anthonyhann/ai-news-rss
+gh secret set FEISHU_WEBHOOK_URL --repo anthonyhann/ai-news-rss
+```
+
+检查名称（只显示名称和时间，不显示值）：
+
+```bash
+gh secret list --repo anthonyhann/ai-news-rss
+```
+
+### 6. 配置信源、阈值与提示词
+
+新增信源时，在 `config/sources/` 对应 YAML 中加入唯一 `id`：
+
+```yaml
+sources:
+  - id: example-ai-blog
+    kind: rss
+    name: Example AI Blog
+    url: https://example.com/feed.xml
+    tier: 2
+    lang: en
+    category: model
+    max_items: 20
+    enabled: true
+```
+
+`tier` 越小可信度越高；暂时不用的信源设 `enabled: false`，不要删除目录。连续失败 5 次的信源会自动跳过，修复后用以下命令清除失败计数：
+
+```bash
+cargo run -- sources reset example-ai-blog
+```
+
+编辑阈值在 `config/app.toml` 的 `[pipeline]`：
+
+- `digest_score`：进入简报的最低分，默认 60。
+- `alert_score` / `alert_confidence`：即时提醒阈值，默认 90 / 0.80。
+- `max_alerts_per_run`：单次最多提醒数，默认 3。
+- `dedup_days`、`simhash_hamming`、`title_jaccard`：跨天去重严格度。
+- `languages`：简报语言列表。
+
+提示词在 `config/prompts/`。修改 `score.md`、`dedup.md`、`brief.md` 或 `action.md` 会影响下一次模型调用；建议先在 fixture 或单源采集中验证，再跑全量。
+
+### 7. 启动与验收
+
+按以下顺序验证，避免一上来就消耗完整模型预算：
+
+```bash
+# 1. 依赖与配置
+cargo run -- doctor
+cargo run -- sources count
+cargo run -- sources check
+
+# 2. 单源网络采集
+cargo run -- collect --only openai-blog
+
+# 3. 全量采集 + 评分
+cargo run -- run --no-brief
+
+# 4. 生成简报和行动建议
+cargo run -- brief --slot morning
+
+# 5. 导出静态数据并预览
+cargo run -- export
+pnpm --dir web build
+pnpm --dir web preview
+```
+
+检查 `web/public/data/latest.json` 和 `actions.json` 是否包含 `action_plan`、简报和来源链接。GitHub Actions 调试时使用 `workflow_dispatch`，先看 Collect 日志，再触发 Digest，最后检查 Pages 页面。
+
+### 8. 故障排查
+
+| 现象 | 原因 | 处理 |
+|---|---|---|
+| `configured=false` 或输出 `mock-editor` | 未设置 `LLM_API_KEY`，或端点/模型为空 | 填写 `.env` 后运行 `doctor` |
+| `X browser session is not logged in` | Cookie 过期或账号无权访问私有列表 | 重新获取 `auth_token` / `ct0` |
+| X 源健康检查失败但其他源正常 | X 单源被隔离 | 检查 List URL、Cookie、代理 |
+| 飞书无消息 | Webhook 缺失、关键词/签名不匹配 | 检查 `FEISHU_WEBHOOK_URL` 和机器人安全设置 |
+| 没有简报 | 没有条目达到 `digest_score`，或未配置模型 | 查看运行统计和评分日志 |
+| 信源被自动停用 | 连续失败 5 次 | 修复来源后执行 `sources reset` |
+| Actions 无法写 `state` 分支 | workflow 权限不足或 state 分支保护 | 检查 `contents: write` 和分支规则 |
+| 本地改了 `.env` 不生效 | 不在仓库根目录启动，或变量为空 | 在项目根目录重启命令 |
+
+### 9. 安全规则
+
+- 只把真实值放在 `.env` 或 GitHub Secrets，不写进 README、issue、日志和截图。
+- 提交前检查 `git status` 和 `git diff`，确认没有 `.env`、Cookie、Webhook 或 API Key。
+- 不要复用个人主账号 Cookie；优先使用专用账号或官方 API。
+- 定期轮换 `LLM_API_KEY`、X Cookie、飞书 Webhook 和 SMTP 密码。
+- 怀疑泄露时立即撤销旧密钥，再重新设置 Secret。
 
 ## 信源目录
 
@@ -230,23 +404,7 @@ X 的自动化规则和风控会变化。生产环境建议使用专用小号或
 
 所需 Secrets 见 `.env.example` 和各 workflow 文件。永远不要提交 `.env`、`cookies.json`、`data/` 或 `web/public/data/`。
 
-### 启用真实模型、X 与飞书
-
-工作流会在以下 Secrets 就绪后自动启用对应能力：
-
-- **真实模型**：`LLM_BASE_URL`、`LLM_API_KEY`、`LLM_SCORING_MODEL`、`LLM_EDITOR_MODEL`。没有 `LLM_API_KEY` 时仍会运行，但使用确定性 mock scorer。
-- **X 采集**：`X_LIST_URL`、`TWITTER_AUTH_TOKEN`、`TWITTER_CT0`，以及可选的 `TWITTER_PROXY`。仅设置 List URL 不足以通过登录检查。
-- **飞书推送**：`FEISHU_WEBHOOK_URL`。`config/app.toml` 中 `[delivery.feishu] enabled = true` 已开启。
-
-在本地用 GitHub CLI 安全录入（命令会提示输入值，不会写入 shell 历史）：
-
-```bash
-gh secret set LLM_API_KEY --repo anthonyhann/ai-news-rss
-gh secret set X_LIST_URL --repo anthonyhann/ai-news-rss
-gh secret set FEISHU_WEBHOOK_URL --repo anthonyhann/ai-news-rss
-```
-
-录入后运行一次 `workflow_dispatch` 的 Collect 工作流即可验证真实采集、评分与飞书推送。
+Secrets 的获取、写入和验收步骤统一见上方 **配置 SOP**。所有真实值只放在 `.env` 或 GitHub Secrets；仓库只保留无密钥的 `.env.example`。
 
 ## Docker
 

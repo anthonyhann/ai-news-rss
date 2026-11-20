@@ -11,7 +11,7 @@ const nav: Array<{ id: View; zh: string; en: string; glyph: string }> = [
   { id: "sources", zh: "信源空间", en: "Sources", glyph: "⌁" },
   { id: "alerts", zh: "高分提醒", en: "Alerts", glyph: "✦" },
   { id: "archive", zh: "时光归档", en: "Archive", glyph: "◫" },
-  { id: "about", zh: "关于 Po", en: "About", glyph: "?" },
+  { id: "about", zh: "关于 Po Radar", en: "About Po Radar", glyph: "?" },
 ];
 
 function routeFromHash(): View {
@@ -23,13 +23,13 @@ function App() {
   const [feed, setFeed] = useState<FeedPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<View>(routeFromHash());
-  const [lang, setLang] = useState<Lang>(() => (localStorage.getItem("muse-lang") as Lang) || "zh");
-  const [dusk, setDusk] = useState(() => localStorage.getItem("muse-theme") === "dusk");
+  const [lang, setLang] = useState<Lang>(() => (localStorage.getItem("po-radar-lang") as Lang) || "zh");
+  const [dusk, setDusk] = useState(() => localStorage.getItem("po-radar-theme") === "dusk");
   const [query, setQuery] = useState("");
   const [minScore, setMinScore] = useState(0);
   const [bookmarks, setBookmarks] = useState<Set<string>>(() => {
     try {
-      return new Set(JSON.parse(localStorage.getItem("muse-bookmarks") || "[]"));
+      return new Set(JSON.parse(localStorage.getItem("po-radar-bookmarks") || "[]"));
     } catch {
       return new Set();
     }
@@ -52,13 +52,13 @@ function App() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("muse-lang", lang);
-    localStorage.setItem("muse-theme", dusk ? "dusk" : "oat");
+    localStorage.setItem("po-radar-lang", lang);
+    localStorage.setItem("po-radar-theme", dusk ? "dusk" : "oat");
     document.documentElement.dataset.theme = dusk ? "dusk" : "oat";
   }, [lang, dusk]);
 
   useEffect(() => {
-    localStorage.setItem("muse-bookmarks", JSON.stringify([...bookmarks]));
+    localStorage.setItem("po-radar-bookmarks", JSON.stringify([...bookmarks]));
   }, [bookmarks]);
 
   const items = useMemo(() => {
@@ -105,10 +105,10 @@ function App() {
   return (
     <div className="app-shell">
       <aside className="spaces-rail">
-        <button className="muse-brand" onClick={() => navigate("today")}>
+        <button className="po-brand" onClick={() => navigate("today")}>
           <PoAvatar size="sm" />
           <span>
-            <strong>Muse Radar</strong>
+            <strong>Po Radar</strong>
             <small>Po · your companion editor</small>
           </span>
         </button>
@@ -143,8 +143,8 @@ function App() {
         </div>
       </aside>
 
-      <main className="muse-main">
-        <header className="muse-topbar">
+      <main className="po-main">
+        <header className="po-topbar">
           {feed && (
             <StatusPill
               feed={feed}
@@ -170,7 +170,7 @@ function App() {
         </header>
 
         {loading || !feed ? (
-          <div className="muse-loading">
+          <div className="po-loading">
             <PoAvatar size="lg" />
             <span>{t("Po 正在整理今天的信号…", "Po is gathering today's signals…")}</span>
           </div>
@@ -399,8 +399,8 @@ function Today(props: {
       <section className="content-grid">
         <div className="feed-column">
           <SectionHead kicker={t("为你留下的信号", "KEPT FOR YOU")} title={t("值得花时间的事", "Things worth your time")} />
-          <div className="muse-toolbar">
-            <div className="muse-search">
+          <div className="po-toolbar">
+            <div className="po-search">
               <span>⌕</span>
               <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("搜索标题、标签或摘要…", "Search titles, tags or summaries…")} />
             </div>
@@ -769,9 +769,9 @@ function About({ lang, t }: { lang: Lang; t: (zh: string, en: string) => string 
     <div className="page-stack about-page">
       <section className="about-hero">
         <div>
-          <span className="eyebrow">{t("关于 Po 与 Muse Radar", "ABOUT PO & MUSE RADAR")}</span>
+          <span className="eyebrow">{t("关于 Po Radar", "ABOUT PO RADAR")}</span>
           <h1>{t("工具有可靠性，也可以有体温。", "A tool can be reliable and warm.")}</h1>
-          <p>{t("Po 是 Muse Radar 的陪伴式主编：柑橘橙的绒毛身体、奶油色脸和肚皮、珊瑚色耳内与脚掌，头顶还有一片叶子。界面借鉴 Muse 的视觉哲学：稳定原语、温和材质、拟人化陪伴和生成式表达。它不隐藏判断，也不假装自己是人。", "Po is Muse Radar's companion editor: a tangerine plush body, cream face and belly, coral inner ears and feet, and a small leaf on top. The interface borrows Muse's visual philosophy: stable primitives, warm materials, embodied companionship and generative expression. It does not hide judgment or pretend to be human.")}</p>
+          <p>{t("Po 是 Po Radar 的陪伴式主编：柑橘橙的绒毛身体、奶油色脸和肚皮、珊瑚色耳内与脚掌，头顶还有一片叶子。界面以 Po 的视觉语言为核心：圆润原语、柔软材质、拟人化陪伴和生成式表达。它不隐藏判断，也不假装自己是人。", "Po is Po Radar's companion editor: a tangerine plush body, cream face and belly, coral inner ears and feet, and a small leaf on top. The interface is built around Po's visual language: rounded primitives, warm materials, embodied companionship and generative expression. It does not hide judgment or pretend to be human.")}</p>
         </div>
         <PoAvatar size="xl" />
       </section>

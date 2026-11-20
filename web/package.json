@@ -2,7 +2,7 @@
   "name": "ainews-web",
   "private": true,
   "version": "0.1.0",
-  "description": "Muse Radar dashboard for the ainews intelligence pipeline",
+  "description": "Po Radar dashboard for the ainews intelligence pipeline",
   "license": "MIT",
   "type": "module",
   "scripts": {

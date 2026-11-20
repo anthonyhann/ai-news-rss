@@ -4,8 +4,13 @@
 /web/public/data
 /web/node_modules
 /browser-worker/node_modules
-/.env
-/.env.local
+.env
+.env.*
+!.env.example
+cookies.json
+storage-state*.json
+*.pem
+*.key
 /state.sqlite3
 /state.sqlite3-shm
 /state.sqlite3-wal
