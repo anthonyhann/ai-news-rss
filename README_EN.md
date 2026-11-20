@@ -238,6 +238,10 @@ The ARK Agent Plan OpenAI-compatible data plane is
 `https://ark.cn-beijing.volces.com/api/plan/v3`. Using `/api/plan` directly
 returns 404, while the ordinary `/api/v3` path returns 401 for a plan key.
 
+GitHub-hosted runners must be able to reach the ARK China endpoint. When they
+cannot, the run falls back to the mock scorer. Use a self-hosted runner or a
+reachable OpenAI-compatible gateway for stable real-model runs.
+
 ```bash
 cargo run -- doctor | jq '.llm'
 ```
@@ -285,6 +289,11 @@ content afterwards.
 Use `TWITTER_PROXY` only for local networks that need a proxy. Never store a
 `127.0.0.1:7890`-style local address as a GitHub Actions Secret; the hosted
 runner cannot reach it.
+
+GitHub-hosted runners use a different egress IP from Easel. X can reject that
+session; `X browser session is not logged in` usually means the runner/VPN
+path is not accepted. Use a self-hosted runner, a network-reachable proxy, or
+the official X API. The Easel login remains usable for local runs.
 
 ### 4. Feishu delivery
 

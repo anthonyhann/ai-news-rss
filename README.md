@@ -195,6 +195,8 @@ LLM_EDITOR_MODEL=deepseek-chat
 
 ARK Agent Plan 的 OpenAI-compatible 数据面是 `https://ark.cn-beijing.volces.com/api/plan/v3`；直接使用 `/api/plan` 会返回 404，使用普通 `/api/v3` 会返回 401。
 
+如果使用 GitHub-hosted Runner，请确认 Runner 所在网络能访问 ARK 中国区域端点；无法访问时运行会降级为 mock scorer。需要稳定真实模型时，使用自托管 Runner 或可访问的 OpenAI-compatible 网关。
+
 验证：
 
 ```bash
@@ -234,6 +236,8 @@ X 单源失败只会记录健康状态，不会阻断 RSS/HN/Reddit/GitHub。可
 如果账号没有现成的 X List，也可以把 `X_LIST_URL` 设为 `https://x.com/home`，worker 会采集该登录账号的首页时间线，再由 AI 评分层过滤非 AI 内容。
 
 `TWITTER_PROXY` 应只在本地需要代理时填写；不要把 `127.0.0.1:7890` 这类本机地址配置成 GitHub Actions Secret，Runner 无法访问它。
+
+GitHub-hosted Runner 的出口 IP 与 Easel 本机不同，X 可能拒绝该会话。若 Actions 返回 `X browser session is not logged in`，请使用自托管 Runner、目标网络可达的代理或官方 X API；Easel 登录态可直接用于本机运行。
 
 ### 4. 配置飞书推送
 
