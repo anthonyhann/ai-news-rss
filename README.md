@@ -193,6 +193,8 @@ LLM_EDITOR_MODEL=deepseek-chat
 
 获取 `LLM_API_KEY`：登录 [DeepSeek 开放平台](https://platform.deepseek.com/api_keys) → 创建 API Key → 复制 `sk-...`。项目不绑定厂商，也可以换用任意 OpenAI-compatible 接口，只要同时修改 `LLM_BASE_URL` 和两个模型名。
 
+ARK Agent Plan 的 OpenAI-compatible 数据面是 `https://ark.cn-beijing.volces.com/api/plan/v3`；直接使用 `/api/plan` 会返回 404，使用普通 `/api/v3` 会返回 401。
+
 验证：
 
 ```bash
@@ -228,6 +230,8 @@ cargo run -- sources check
 ```
 
 X 单源失败只会记录健康状态，不会阻断 RSS/HN/Reddit/GitHub。可在 `config/app.toml` 的 `[browser]` 调整 `max_scrolls`、`scroll_delay_ms`、`timeout_ms`；不要盲目增大，以免触发风控。
+
+如果账号没有现成的 X List，也可以把 `X_LIST_URL` 设为 `https://x.com/home`，worker 会采集该登录账号的首页时间线，再由 AI 评分层过滤非 AI 内容。
 
 ### 4. 配置飞书推送
 
@@ -399,6 +403,12 @@ X 的自动化规则和风控会变化。生产环境建议使用专用小号或
 - `.github/workflows/ci.yml`：fmt、clippy、test、前端构建、worker 语法检查。
 - `.github/workflows/collect.yml`：每 2 小时采集 + 评分，然后构建并部署静态站。
 - `.github/workflows/digest.yml`：北京时间 08:20 / 20:20 生成中英双语简报和行动建议。
+
+手动做单源 Smoke Test（例如只验证 X）：
+
+```bash
+gh workflow run collect.yml --repo anthonyhann/ai-news-rss -f only=x-ai-builders
+```
 
 工作流使用 **单提交 `state` 分支**保存 SQLite，避免主分支和历史仓库膨胀。公开仓库的 GitHub-hosted runner 分钟免费，但 LLM 调用、X/Playwright 代理和 YouTube 网络仍可能产生费用。
 

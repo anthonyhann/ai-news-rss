@@ -30,8 +30,7 @@ function jsonLine(value) {
   process.stdout.write(`${JSON.stringify(value)}\n`);
 }
 
-function extractScript(maxItems) {
-  return ({ maxItems }) => {
+function extractScript({ maxItems }) {
     const parseCount = (node) => {
       if (!node) return null;
       const raw = (node.getAttribute("aria-label") || node.innerText || "").replace(/,/g, "");
@@ -66,7 +65,6 @@ function extractScript(maxItems) {
       })
       .filter((x) => x.url && x.text)
       .slice(0, maxItems);
-  };
 }
 
 function storageStateFromEnv(envName) {
@@ -97,6 +95,9 @@ async function main() {
     contextOptions.proxy = { server: input.proxy };
   }
 
+  const authToken = process.env.TWITTER_AUTH_TOKEN || process.env.X_AUTH_TOKEN;
+  const ct0 = process.env.TWITTER_CT0 || process.env.X_CT0;
+  const hasCookies = Boolean(authToken && ct0);
   let browser;
   let context;
   if (storageState) {
@@ -107,6 +108,13 @@ async function main() {
       ...contextOptions,
       storageState,
     });
+  } else if (hasCookies) {
+    // Prefer an ephemeral context when cookies are available. This avoids
+    // locking a persistent browser profile that another local app may use.
+    browser = await chromium.launch(launchOptions).catch(() =>
+      chromium.launch({ headless, args }),
+    );
+    context = await browser.newContext(contextOptions);
   } else {
     fs.mkdirSync(profileDir, { recursive: true });
     context = await chromium
@@ -116,9 +124,7 @@ async function main() {
       );
   }
 
-  const authToken = process.env.TWITTER_AUTH_TOKEN || process.env.X_AUTH_TOKEN;
-  const ct0 = process.env.TWITTER_CT0 || process.env.X_CT0;
-  if (authToken && ct0) {
+  if (hasCookies) {
     await context.addCookies([
       {
         name: "auth_token",
@@ -161,14 +167,13 @@ async function main() {
     waitUntil: "domcontentloaded",
     timeout: input.timeout_ms,
   });
-  await page.waitForTimeout(5000);
+  await page.waitForSelector('article[data-testid="tweet"]', { timeout: 12000 }).catch(() => null);
+  await page.waitForTimeout(1200);
   for (let i = 0; i < input.max_scrolls; i += 1) {
     await page.mouse.wheel(0, 2600);
     await page.waitForTimeout(input.scroll_delay_ms);
   }
-  const items = await page.evaluate(extractScript(input.max_items), {
-    maxItems: input.max_items,
-  });
+  const items = await page.evaluate(extractScript, { maxItems: input.max_items });
   jsonLine({ ok: true, items });
   await context.close();
   if (browser) await browser.close();

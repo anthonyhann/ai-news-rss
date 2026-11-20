@@ -38,7 +38,7 @@ x_handles:
 sources:
   - id: x-ai-builders
     kind: x
-    name: X AI Builders
+    name: XBuilder Home
     list_url: ${X_LIST_URL}
     tier: 2
     lang: en

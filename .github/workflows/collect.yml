@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "7 */2 * * *"
   workflow_dispatch:
+    inputs:
+      only:
+        description: "Optional source id or kind, e.g. x-ai-builders"
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -55,6 +60,7 @@ jobs:
         run: cargo build --release
       - name: Collect and score
         env:
+          ONLY_SOURCE: ${{ inputs.only }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
@@ -72,7 +78,12 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           RUST_LOG: ainews=info
-        run: ./target/release/ainews run --no-brief
+        run: |
+          if [ -n "$ONLY_SOURCE" ]; then
+            ./target/release/ainews run --no-brief --only "$ONLY_SOURCE"
+          else
+            ./target/release/ainews run --no-brief
+          fi
       - name: Build static dashboard
         run: pnpm --dir web build
       - name: Save state branch

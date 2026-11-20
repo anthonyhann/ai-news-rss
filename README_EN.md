@@ -234,6 +234,10 @@ create an API key and copy the `sk-...` value. The project is not tied to a
 vendor; for another OpenAI-compatible endpoint, change the base URL and both
 model names together.
 
+The ARK Agent Plan OpenAI-compatible data plane is
+`https://ark.cn-beijing.volces.com/api/plan/v3`. Using `/api/plan` directly
+returns 404, while the ordinary `/api/v3` path returns 401 for a plan key.
+
 ```bash
 cargo run -- doctor | jq '.llm'
 ```
@@ -273,6 +277,10 @@ cargo run -- sources check
 X failures are isolated to the source and do not block RSS/HN/Reddit/GitHub.
 `[browser]` in `config/app.toml` controls `max_scrolls`, `scroll_delay_ms`, and
 `timeout_ms`; avoid overly aggressive values.
+
+If the account has no X List, `X_LIST_URL` may be set to `https://x.com/home` to
+collect the authenticated home timeline; the scoring layer filters non-AI
+content afterwards.
 
 ### 4. Feishu delivery
 
@@ -467,6 +475,12 @@ failure; it does not block RSS/HN/Reddit/GitHub collection.
   builds and deploys the static dashboard.
 - `.github/workflows/digest.yml` generates Chinese/English briefs at 08:20 and
   20:20 Asia/Shanghai.
+
+Run a single-source smoke test, for example X only:
+
+```bash
+gh workflow run collect.yml --repo anthonyhann/ai-news-rss -f only=x-ai-builders
+```
 
 The workflows use a **single-commit `state` branch** for SQLite. This keeps
 the main branch and Git history small. The public repository gets standard
