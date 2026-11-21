@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -52,5 +53,21 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web/dist
+      - name: Wait for Pages artifact
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for attempt in $(seq 1 12); do
+            count=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts" \
+              --jq '[.artifacts[] | select(.name == "github-pages" and .expired == false)] | length')
+            if [ "$count" -eq 1 ]; then
+              echo "Pages artifact is ready"
+              exit 0
+            fi
+            echo "Waiting for Pages artifact ($attempt/12)..."
+            sleep 5
+          done
+          echo "Pages artifact was not visible after 60 seconds" >&2
+          exit 1
       - uses: actions/deploy-pages@v4
         id: deployment
