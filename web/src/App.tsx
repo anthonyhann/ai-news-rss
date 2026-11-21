@@ -1009,15 +1009,18 @@ function localizedActionText(zh: string, en: string | undefined, lang: Lang) {
 }
 
 function localizedStoryWhy(story: Story, lang: Lang) {
-  return lang === "zh" ? story.why_it_matters || "" : story.why_it_matters_en || "";
+  if (lang === "zh") return humanizeLegacyWhy(story.why_it_matters || "");
+  return story.why_it_matters_en || genericWhy(story.score, "en");
 }
 
 function localizedStoryTip(story: Story, lang: Lang) {
-  return lang === "zh" ? story.user_tip_zh || story.user_tip_en || "" : story.user_tip_en || "";
+  if (lang === "zh") return story.user_tip_zh || story.user_tip_en || genericTip(story.score, "zh");
+  return story.user_tip_en || genericTip(story.score, "en");
 }
 
 function localizedTip(item: Brief["sections"][number]["items"][number], lang: Lang) {
-  return lang === "zh" ? item.user_tip_zh || item.user_tip_en || "" : item.user_tip_en || "";
+  if (lang === "zh") return item.user_tip_zh || item.user_tip_en || genericTip(item.score, "zh");
+  return item.user_tip_en || genericTip(item.score, "en");
 }
 
 function localizedBackground(item: Brief["sections"][number]["items"][number], lang: Lang) {
@@ -1032,7 +1035,40 @@ function localizedWatchlist(plan: FeedPayload["action_plan"] | undefined, lang: 
 }
 
 function localizedWhy(item: Brief["sections"][number]["items"][number], lang: Lang) {
-  return lang === "zh" ? item.why_it_matters : item.why_it_matters_en || "";
+  if (lang === "zh") return humanizeLegacyWhy(item.why_it_matters);
+  return item.why_it_matters_en || genericWhy(item.score, "en");
+}
+
+function humanizeLegacyWhy(value: string) {
+  if (value === "官方一手信息，具备明确事件与较高影响。") {
+    return "这是官方发布的新变化。重点是看它有没有让你现在用的工具更快、更便宜或更好用。";
+  }
+  if (value === "与 AI 相关，需结合来源和社区讨论判断。") {
+    return "这条消息和 AI 有关，但先别急着下结论，看看真实用户怎么用。";
+  }
+  return value;
+}
+
+function genericWhy(score: number, lang: Lang) {
+  if (lang === "zh") {
+    return score >= 90
+      ? "这是今天值得注意的新变化。先看它会不会让你正在用的 AI 工具更快、更便宜或更好用。"
+      : "这条消息和 AI 有关，但先看真实用户反馈，再决定要不要跟进。";
+  }
+  return score >= 90
+    ? "This is a notable change. Check whether it makes the AI tools you use faster, cheaper or easier."
+    : "This is AI-related, but wait for real user feedback before deciding whether it matters to you.";
+}
+
+function genericTip(score: number, lang: Lang) {
+  if (lang === "zh") {
+    return score >= 90
+      ? "挑一个你每天都会做的真实任务，花 10 分钟试一次，再和现在的做法对比。"
+      : "打开原文看一眼，记下它会不会影响你正在用的工具；不会就先跳过。";
+  }
+  return score >= 90
+    ? "Spend 10 minutes trying it on one real task you do every day, then compare it with your current approach."
+    : "Open the source, note whether it affects the tools you already use, and skip it if it does not.";
 }
 
 function briefSlot(slot: string, lang: Lang) {
