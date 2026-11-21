@@ -261,6 +261,8 @@ pub struct Story {
     #[serde(default)]
     pub why_it_matters: String,
     #[serde(default)]
+    pub why_it_matters_en: String,
+    #[serde(default)]
     pub background: String,
     #[serde(default)]
     pub community: String,
@@ -308,6 +310,8 @@ pub struct TopSignal {
     #[serde(default)]
     pub why_it_matters: String,
     #[serde(default)]
+    pub why_it_matters_en: String,
+    #[serde(default)]
     pub background: String,
     #[serde(default)]
     pub community: String,
@@ -322,7 +326,11 @@ pub struct TopSignal {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ActionOption {
     pub title: String,
+    #[serde(default)]
+    pub title_en: String,
     pub why_now: String,
+    #[serde(default)]
+    pub why_now_en: String,
     pub impact: f64,
     pub feasibility: f64,
     pub speed: f64,
@@ -342,7 +350,11 @@ pub struct ActionPlan {
     #[serde(default)]
     pub watchlist: Vec<String>,
     #[serde(default)]
+    pub watchlist_en: Vec<String>,
+    #[serde(default)]
     pub summary: String,
+    #[serde(default)]
+    pub summary_en: String,
     #[serde(default)]
     pub model: String,
 }

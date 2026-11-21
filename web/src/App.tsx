@@ -61,6 +61,27 @@ function App() {
     localStorage.setItem("po-radar-bookmarks", JSON.stringify([...bookmarks]));
   }, [bookmarks]);
 
+  useEffect(() => {
+    if (!selectedBrief || !feed || selectedBrief.lang === lang) return;
+    const localized = feed.briefs.find(
+      (brief) =>
+        brief.date === selectedBrief.date &&
+        brief.slot === selectedBrief.slot &&
+        brief.lang === lang,
+    );
+    if (!localized) {
+      setSelectedBrief(null);
+      return;
+    }
+    let canceled = false;
+    loadBrief(localized.path).then((data) => {
+      if (!canceled && data) setSelectedBrief(data as Brief);
+    });
+    return () => {
+      canceled = true;
+    };
+  }, [feed, lang, selectedBrief]);
+
   const items = useMemo(() => {
     const list = feed?.items ?? [];
     const q = query.trim().toLowerCase();
@@ -298,7 +319,7 @@ function Today(props: {
   t: (zh: string, en: string) => string;
 }) {
   const { feed, items, top, lang, query, setQuery, minScore, setMinScore, bookmarks, toggleBookmark, openBrief, navigate, t } = props;
-  const latestBrief = feed.briefs.find((brief) => brief.lang === lang) ?? feed.briefs[0];
+  const latestBrief = feed.briefs.find((brief) => brief.lang === lang);
   const action = feed.action_plan?.top_action;
   const sourceCount = feed.sources.length;
   const pageSize = 40;
@@ -478,10 +499,10 @@ function StoryCard(props: {
         </div>
         <h3>{localTitle(story, lang)}</h3>
         <p className="signal-summary">{localSummary(story, lang)}</p>
-        {story.why_it_matters && (
+        {localizedStoryWhy(story, lang) && (
           <div className="why-bubble">
             <span className="bubble-label">{t("为什么重要", "WHY IT MATTERS")}</span>
-            <p>{story.why_it_matters}</p>
+            <p>{localizedStoryWhy(story, lang)}</p>
           </div>
         )}
         <div className="signal-tags">
@@ -503,6 +524,9 @@ function StoryCard(props: {
 function ActionCard({ feed, lang, t }: { feed: FeedPayload; lang: Lang; t: (zh: string, en: string) => string }) {
   const plan = feed.action_plan;
   const action = plan?.top_action;
+  const actionTitle = action ? localizedActionText(action.title, action.title_en, lang) : "";
+  const actionReady = Boolean(action) && (lang === "zh" || Boolean(actionTitle));
+  const missingEnglish = lang === "en" && Boolean(action) && !actionTitle;
   return (
     <div className="side-card action-side-card">
       <div className="side-card-heading">
@@ -512,10 +536,10 @@ function ActionCard({ feed, lang, t }: { feed: FeedPayload; lang: Lang; t: (zh: 
         </div>
         <span className="tot-badge">ToT</span>
       </div>
-      {action ? (
+      {action && actionReady ? (
         <>
-          <p className="action-title">{action.title}</p>
-          <p className="action-why">{action.why_now}</p>
+          <p className="action-title">{localizedActionText(action.title, action.title_en, lang)}</p>
+          <p className="action-why">{localizedActionText(action.why_now, action.why_now_en, lang)}</p>
           <div className="action-metrics">
             <span>{t("影响", "impact")} {action.impact.toFixed(0)}</span>
             <span>{t("可行", "feasible")} {action.feasibility.toFixed(0)}</span>
@@ -525,15 +549,21 @@ function ActionCard({ feed, lang, t }: { feed: FeedPayload; lang: Lang; t: (zh: 
           {plan?.experiments?.slice(0, 2).map((experiment) => (
             <div className="action-mini" key={experiment.title}>
               <span>↳</span>
-              <span>{experiment.title}</span>
+              <span>{localizedActionText(experiment.title, experiment.title_en, lang)}</span>
             </div>
           ))}
-          {plan?.watchlist?.[0] && <div className="action-watch">{t("观察", "Watch")} · {plan.watchlist[0]}</div>}
+          {localizedWatchlist(plan, lang)[0] && (
+            <div className="action-watch">{t("观察", "Watch")} · {localizedWatchlist(plan, lang)[0]}</div>
+          )}
         </>
       ) : (
         <>
-          <p className="action-title">{t("行动建议正在路上", "The action plan is on its way")}</p>
-          <p className="action-why">{t("digest 任务会把最高分信号变成 Top 1 行动、两个实验和一个观察项。", "The digest turns top signals into one action, two experiments and a watch item.")}</p>
+          <p className="action-title">{missingEnglish ? "English action copy is not available yet" : t("行动建议正在路上", "The action plan is on its way")}</p>
+          <p className="action-why">
+            {missingEnglish
+              ? "This archived plan predates the bilingual action edition. Switch to 中文 for the original action."
+              : t("digest 任务会把最高分信号变成 Top 1 行动、两个实验和一个观察项。", "The digest turns top signals into one action, two experiments and a watch item.")}
+          </p>
         </>
       )}
       <button className="text-button" onClick={() => window.location.hash = "#/briefs"}>
@@ -583,40 +613,47 @@ function Briefs(props: {
   t: (zh: string, en: string) => string;
 }) {
   const { feed, selected, onOpen, onClose, lang, t } = props;
+  const localizedBriefs = feed.briefs.filter((brief) => brief.lang === lang);
   if (selected) {
+    const briefLanguage: Lang = selected.lang === "en" ? "en" : "zh";
+    const showActionPlan =
+      !!selected.action_plan &&
+      (briefLanguage === "zh" ||
+        Boolean(selected.action_plan.top_action?.title_en) ||
+        Boolean(selected.action_plan.summary_en));
     return (
       <div className="page-stack">
         <div className="brief-toolbar">
           <button className="soft-button" onClick={onClose}>← {t("返回简报", "Back to briefs")}</button>
-          <span>{selected.date} · {selected.slot} · {selected.lang.toUpperCase()}</span>
+          <span>{selected.date} · {briefSlot(selected.slot, briefLanguage)} · {selected.lang.toUpperCase()}</span>
         </div>
         <article className="brief-paper">
           <div className="brief-paper-head">
             <div>
               <span className="eyebrow">{t("Po 编辑的简报", "PO'S BRIEF")}</span>
-              <h2>{selected.date}<br /><span>{selected.slot}</span></h2>
+              <h2>{selected.date}<br /><span>{briefSlot(selected.slot, briefLanguage)}</span></h2>
             </div>
             <PoAvatar size="lg" />
           </div>
           <div className="brief-summary">
             {selected.executive_summary.map((line, index) => (
-              <p key={`${line}-${index}`}><span>{String(index + 1).padStart(2, "0")}</span>{line}</p>
+              <p key={`${line}-${index}`}><span>{String(index + 1).padStart(2, "0")}</span>{localizedBriefCopy(line, briefLanguage)}</p>
             ))}
           </div>
           {selected.sections.map((section) => (
             <section className="brief-section" key={section.title_en}>
-              <h3>{lang === "zh" ? section.title_zh : section.title_en}</h3>
+              <h3>{briefLanguage === "zh" ? section.title_zh : section.title_en}</h3>
               {section.items.map((item) => (
                 <div className="brief-item" key={item.story_id}>
                   <div className="brief-item-head">
-                    <strong>{lang === "zh" ? item.title_zh : item.title_en}</strong>
+                    <strong>{briefLanguage === "zh" ? item.title_zh : item.title_en}</strong>
                     <span className="score-chip">{item.score.toFixed(0)}</span>
                   </div>
-                  <p>{lang === "zh" ? item.summary_zh : item.summary_en}</p>
-                  {item.why_it_matters && (
+                  <p>{briefLanguage === "zh" ? item.summary_zh : item.summary_en}</p>
+                  {localizedWhy(item, briefLanguage) && (
                     <div className="why-bubble">
                       <span className="bubble-label">{t("为什么重要", "WHY IT MATTERS")}</span>
-                      <p>{item.why_it_matters}</p>
+                      <p>{localizedWhy(item, briefLanguage)}</p>
                     </div>
                   )}
                   <div className="signal-links">
@@ -628,14 +665,34 @@ function Briefs(props: {
               ))}
             </section>
           ))}
-          {selected.action_plan && (
+          {selected.action_plan && showActionPlan && (
             <section className="action-panel">
               <div className="action-panel-heading">
                 <span className="eyebrow">{t("今天的行动", "TODAY'S ACTION")}</span>
                 <span className="tot-badge">ToT</span>
               </div>
-              <h3>{selected.action_plan.top_action?.title ?? selected.action_plan.summary}</h3>
-              <p>{selected.action_plan.top_action?.why_now}</p>
+              <h3>
+                {selected.action_plan.top_action
+                  ? localizedActionText(
+                      selected.action_plan.top_action.title,
+                      selected.action_plan.top_action.title_en,
+                      briefLanguage,
+                    )
+                  : localizedText(
+                      selected.action_plan.summary,
+                      selected.action_plan.summary_en,
+                      briefLanguage,
+                    )}
+              </h3>
+              <p>
+                {selected.action_plan.top_action
+                  ? localizedActionText(
+                      selected.action_plan.top_action.why_now,
+                      selected.action_plan.top_action.why_now_en,
+                      briefLanguage,
+                    )
+                  : ""}
+              </p>
               {!!selected.action_plan.candidates?.length && (
                 <div className="action-candidates">
                   <span className="eyebrow">
@@ -644,7 +701,7 @@ function Briefs(props: {
                   {selected.action_plan.candidates.map((candidate, index) => (
                     <div className="candidate-row" key={`${candidate.title}-${index}`}>
                       <span className="candidate-index">{String(index + 1).padStart(2, "0")}</span>
-                      <strong>{candidate.title}</strong>
+                      <strong>{localizedActionText(candidate.title, candidate.title_en, briefLanguage)}</strong>
                       <span className="candidate-scores">
                         {t("影响", "impact")} {candidate.impact.toFixed(0)} ·{" "}
                         {t("可行", "feasible")} {candidate.feasibility.toFixed(0)} ·{" "}
@@ -659,12 +716,12 @@ function Briefs(props: {
                 <div>
                   <span className="eyebrow">{t("两个实验", "TWO EXPERIMENTS")}</span>
                   {selected.action_plan.experiments.map((experiment) => (
-                    <div className="action-mini" key={experiment.title}><span>↳</span><span>{experiment.title}</span></div>
+                    <div className="action-mini" key={experiment.title}><span>↳</span><span>{localizedActionText(experiment.title, experiment.title_en, briefLanguage)}</span></div>
                   ))}
                 </div>
                 <div>
                   <span className="eyebrow">{t("保持观察", "WATCHLIST")}</span>
-                  {selected.action_plan.watchlist.map((item) => (
+                  {localizedWatchlist(selected.action_plan, briefLanguage).map((item) => (
                     <div className="action-mini" key={item}><span>·</span><span>{item}</span></div>
                   ))}
                 </div>
@@ -676,6 +733,13 @@ function Briefs(props: {
               )}
             </section>
           )}
+          {selected.action_plan && !showActionPlan && (
+            <section className="action-panel">
+              <p className="empty-note">
+                This archived English brief predates bilingual action plans. Switch to 中文 to read the original action.
+              </p>
+            </section>
+          )}
         </article>
       </div>
     );
@@ -683,15 +747,15 @@ function Briefs(props: {
   return (
     <div className="page-stack">
       <SectionHead kicker={t("简报归档", "BRIEF ARCHIVE")} title={t("每个时段，一页判断", "One page of judgment per cycle")} />
-      {feed.briefs.length === 0 ? (
+      {localizedBriefs.length === 0 ? (
         <div className="empty-note">{t("还没有简报。digest 任务运行后会出现在这里。", "No briefs yet. They appear after the digest runs.")}</div>
       ) : (
         <div className="brief-list">
-          {feed.briefs.map((brief) => (
+          {localizedBriefs.map((brief) => (
             <button className="brief-card" key={`${brief.date}-${brief.slot}-${brief.lang}`} onClick={() => onOpen(brief)}>
-              <span className="mini-pill">{brief.lang.toUpperCase()}</span>
-              <strong>{brief.date} · {brief.slot}</strong>
-              <p>{brief.title}</p>
+              <span className="mini-pill">{localizedSlotShort(brief.slot, lang)}</span>
+              <strong>{brief.date} · {briefSlot(brief.slot, lang)}</strong>
+              <p>{localizedBriefCopy(brief.title, lang)}</p>
               <span className="text-button">{t("打开", "Open")} →</span>
             </button>
           ))}
@@ -748,17 +812,18 @@ function Alerts({ items, lang, bookmarks, toggleBookmark, t }: { items: Story[];
 }
 
 function Archive({ feed, onOpen, lang, t }: { feed: FeedPayload; onOpen: (b: BriefSummary) => void; lang: Lang; t: (zh: string, en: string) => string }) {
+  const localizedBriefs = feed.briefs.filter((brief) => brief.lang === lang);
   return (
     <div className="page-stack">
       <SectionHead kicker={t("时光归档", "ARCHIVE")} title={t("把每天的判断留在可回溯的地方", "Keep each day's judgment traceable")} />
       <div className="archive-shell">
         <div className="archive-head"><span>{t("日期", "Date")}</span><span>{t("时段", "Slot")}</span><span>{t("语言", "Lang")}</span><span>{t("摘要", "Summary")}</span></div>
-        {feed.briefs.map((brief) => (
+        {localizedBriefs.map((brief) => (
           <button className="archive-row" key={`${brief.date}-${brief.slot}-${brief.lang}`} onClick={() => onOpen(brief)}>
-            <span>{brief.date}</span><span>{brief.slot}</span><span>{brief.lang.toUpperCase()}</span><span>{brief.title}</span>
+            <span>{brief.date}</span><span>{briefSlot(brief.slot, lang)}</span><span>{brief.lang.toUpperCase()}</span><span>{localizedBriefCopy(brief.title, lang)}</span>
           </button>
         ))}
-        {feed.briefs.length === 0 && <div className="empty-note">{t("暂无归档。", "No archive yet.")}</div>}
+        {localizedBriefs.length === 0 && <div className="empty-note">{t("暂无归档。", "No archive yet.")}</div>}
       </div>
     </div>
   );
@@ -885,6 +950,47 @@ function deriveSources(items: Story[]): FeedPayload["sources"] {
 
 function localTitle(story: Story, lang: Lang) {
   return lang === "zh" ? story.title_zh || story.title_en : story.title_en || story.title_zh;
+}
+
+function localizedText(zh: string, en: string | undefined, lang: Lang) {
+  return lang === "zh" ? zh || en || "" : en || zh;
+}
+
+function localizedBriefCopy(value: string, lang: Lang) {
+  if (lang === "en") {
+    return value.replace(/（(\d+)\s*分）/g, " ($1 pts)");
+  }
+  return value.replace(/\((\d+)\s*pts\)/g, "（$1 分）");
+}
+
+function localizedActionText(zh: string, en: string | undefined, lang: Lang) {
+  return lang === "zh" ? zh || en || "" : en || "";
+}
+
+function localizedStoryWhy(story: Story, lang: Lang) {
+  return lang === "zh" ? story.why_it_matters || "" : story.why_it_matters_en || "";
+}
+
+function localizedWatchlist(plan: FeedPayload["action_plan"] | undefined, lang: Lang) {
+  if (!plan) return [];
+  if (lang === "zh") return plan.watchlist;
+  return plan.watchlist_en ?? [];
+}
+
+function localizedWhy(item: Brief["sections"][number]["items"][number], lang: Lang) {
+  return lang === "zh" ? item.why_it_matters : item.why_it_matters_en || "";
+}
+
+function briefSlot(slot: string, lang: Lang) {
+  const evening = slot === "evening";
+  if (lang === "zh") return evening ? "晚报" : "早报";
+  return evening ? "Evening" : "Morning";
+}
+
+function localizedSlotShort(slot: string, lang: Lang) {
+  const evening = slot === "evening";
+  if (lang === "zh") return evening ? "晚" : "早";
+  return evening ? "PM" : "AM";
 }
 
 function localSummary(story: Story, lang: Lang) {

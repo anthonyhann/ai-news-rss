@@ -78,7 +78,7 @@ GitHub, Telegram, WeChat RSS bridges, and newsletters. Most aggregators stop at
 | Action plan | Tree-of-Thoughts generates 3–5 candidates ranked by impact, feasibility, speed and confidence; score summaries are visible in the brief |
 | Alerts | score ≥ 90, confidence ≥ 0.80, 24-hour story deduplication, optional material follow-ups |
 | Delivery | WeCom, Feishu, DingTalk, Telegram, email, web publication |
-| Web | Today, Briefs, Sources, Alerts, Archive, About; bilingual toggle, search, filters, bookmarks, dark/light mode |
+| Web | Today, Briefs, Sources, Alerts, Archive, About; language-aware brief/archive lists, search, filters, bookmarks, dark/light mode |
 | Deployment | GitHub Actions + Pages, local CLI, Docker/Compose, axum API |
 | Browser | Playwright worker for Actions/servers; ego-lite for a local logged-in browser |
 
@@ -315,9 +315,9 @@ their sections and provide the matching URL, token, or SMTP values.
 Daily pushes use **A · Po Morning Letter**: a 60-second brief, today's lead,
 two more signals, the ToT action, and a link to the full brief. Feishu receives
 an interactive card; WeCom and DingTalk receive Markdown; Telegram receives
-HTML; email receives a responsive 600px HTML edition. `PUBLIC_SITE_URL` builds
-the “open full brief” links, can be overridden by a repository variable in
-Actions, and falls back to this project's Pages URL.
+HTML; email receives one merged bilingual 600px HTML edition. `PUBLIC_SITE_URL`
+builds the “open full brief” links, can be overridden by a repository variable
+in Actions, and falls back to this project's Pages URL.
 
 Optional connectivity test:
 

@@ -53,7 +53,7 @@ AI 信息散落在实验室博客、X、YouTube、Reddit、Hacker News、GitHub�
 | 行动 | 思维树生成 3–5 个候选行动，按影响、可行性、见效速度、置信度选择；候选评分在简报中公开可见 |
 | 告警 | ≥90 分、置信度 ≥0.80、24 小时故事去重，支持实质性更新 |
 | 推送 | 企业微信、飞书、钉钉、Telegram、邮件、网页发布 |
-| Web | 今日雷达、每日简报、信源健康、高分告警、归档、方法页；中英切换、搜索、过滤、收藏、深浅色 |
+| Web | 今日雷达、每日简报、信源健康、高分告警、归档、方法页；中英切换后简报与归档按当前语言去重、搜索、过滤、收藏、深浅色 |
 | 部署 | GitHub Actions + Pages、本地 CLI、Docker/Compose、axum API |
 | 浏览器 | Actions/服务器用 Playwright worker；本机已登录浏览器用 ego-lite |
 
@@ -253,7 +253,7 @@ PUBLIC_SITE_URL=https://anthonyhann.github.io/ai-news-rss
 
 `config/app.toml` 已设置 `[delivery.feishu] enabled = true`。启用其他渠道时，分别设置对应 `enabled = true` 并配置 `.env` 中的 URL、Token 或 SMTP 参数。
 
-简报统一采用 **A · Po 晨读信**：60 秒摘要 → 今日头条 → 再看两条 → ToT 今日行动 → 完整简报入口。飞书发送交互卡片，企业微信/钉钉发送 Markdown，Telegram 发送 HTML，邮件发送 600px 响应式 HTML。`PUBLIC_SITE_URL` 用于生成卡片与邮件里的“看完整简报”链接；Actions 中可用仓库变量覆盖，未设置时回落到本项目 Pages 地址。
+简报统一采用 **A · Po 晨读信**：60 秒摘要 → 今日头条 → 再看两条 → ToT 今日行动 → 完整简报入口。飞书发送交互卡片，企业微信/钉钉发送 Markdown，Telegram 发送 HTML，邮件发送中英合并在同一封的 600px 响应式 HTML。`PUBLIC_SITE_URL` 用于生成卡片与邮件里的“看完整简报”链接；Actions 中可用仓库变量覆盖，未设置时回落到本项目 Pages 地址。
 
 可选连通性测试：
 

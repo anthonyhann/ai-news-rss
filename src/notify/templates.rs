@@ -77,7 +77,7 @@ pub fn feishu_digest_card(brief: &Brief) -> Value {
                 .experiments
                 .iter()
                 .take(2)
-                .map(|experiment| format!("↳ {}", experiment.title))
+                .map(|experiment| format!("↳ {}", action_title(experiment, brief)))
                 .collect::<Vec<_>>()
                 .join("\n");
             elements.push(json!({"tag": "hr"}));
@@ -86,8 +86,8 @@ pub fn feishu_digest_card(brief: &Brief) -> Value {
                 "content": format!(
                     "**{} · ToT**\n### {}\n{}\n\n{}\n\n`{}`",
                     section_label(brief, "今天可以做什么", "TODAY'S MOVE"),
-                    action.title,
-                    action.why_now,
+                    action_title(action, brief),
+                    action_why(action, brief),
                     experiments,
                     action_metrics(brief, action)
                 )
@@ -96,11 +96,30 @@ pub fn feishu_digest_card(brief: &Brief) -> Value {
     }
 
     if let Some(url) = brief_url {
+        let button_url = url.clone();
+        let fallback_url = url.clone();
         elements.push(json!({
             "tag": "button",
             "text": {"tag": "plain_text", "content": section_label(brief, "看完整简报", "Open full brief")},
             "type": "primary",
-            "behaviors": [{"type": "open_url", "default_url": url}]
+            "behaviors": [{
+                "type": "open_url",
+                "default_url": button_url,
+                "pc_url": url,
+                "ios_url": url,
+                "android_url": url
+            }]
+        }));
+        elements.push(json!({
+            "tag": "markdown",
+            "content": format!(
+                "{} {fallback_url}",
+                section_label(
+                    brief,
+                    "按钮无法打开时，请复制此链接：",
+                    "If the button does not open, copy this link:"
+                )
+            )
         }));
     }
 
@@ -170,11 +189,11 @@ pub fn wecom_digest(brief: &Brief) -> String {
             out.push_str(&format!(
                 "**{} · ToT**\n**{}**\n{}\n",
                 section_label(brief, "今天可以做什么", "TODAY'S MOVE"),
-                action.title,
-                action.why_now
+                action_title(action, brief),
+                action_why(action, brief)
             ));
             for experiment in plan.experiments.iter().take(2) {
-                out.push_str(&format!("↳ {}\n", experiment.title));
+                out.push_str(&format!("↳ {}\n", action_title(experiment, brief)));
             }
             out.push('\n');
         }
@@ -245,11 +264,14 @@ pub fn telegram_digest(brief: &Brief) -> String {
             out.push_str(&format!(
                 "<b>{} · ToT</b>\n<b>{}</b>\n{}\n",
                 section_label(brief, "今天可以做什么", "TODAY'S MOVE"),
-                escape_html(&action.title),
-                escape_html(&action.why_now)
+                escape_html(action_title(action, brief)),
+                escape_html(action_why(action, brief))
             ));
             for experiment in plan.experiments.iter().take(2) {
-                out.push_str(&format!("↳ {}\n", escape_html(&experiment.title)));
+                out.push_str(&format!(
+                    "↳ {}\n",
+                    escape_html(action_title(experiment, brief))
+                ));
             }
             out.push('\n');
         }
@@ -265,52 +287,55 @@ pub fn telegram_digest(brief: &Brief) -> String {
     truncate_bytes(out, 3900)
 }
 
-pub fn email_digest_html(brief: &Brief) -> String {
-    let signals = signals(brief);
-    let summary = executive_summary_html(brief, &signals);
-    let lead = signals.first();
-    let quick = signals.iter().skip(1).take(2).collect::<Vec<_>>();
-    let action = brief
-        .action_plan
-        .as_ref()
-        .and_then(|plan| plan.top_action.as_ref());
-    let experiments = brief
-        .action_plan
-        .as_ref()
-        .map(|plan| {
-            plan.experiments
+pub fn email_digest_html(primary: &Brief, secondary: Option<&Brief>) -> String {
+    let zh_signals = signals(primary);
+    let english = secondary.filter(|brief| brief.lang.starts_with("en"));
+    let en_signals = english.map(signals).unwrap_or_default();
+    let summary_zh = executive_summary_html(primary, &zh_signals);
+    let summary_en = english
+        .map(|brief| executive_summary_html(brief, &en_signals))
+        .unwrap_or_else(|| {
+            zh_signals
                 .iter()
-                .take(2)
-                .map(|experiment| {
+                .take(3)
+                .enumerate()
+                .map(|(index, item)| {
                     format!(
-                        "<div style=\"margin-top:6px;color:#596449;font-size:12px;\">↳ {}</div>",
-                        escape_html(&experiment.title)
+                        "<div style=\"padding:8px 0;border-top:1px solid #e8ded0;color:#51493f;font-size:13px;line-height:1.6;\"><span style=\"color:#d96849;font-family:monospace;font-size:10px;margin-right:8px;\">{:02}</span>{}</div>",
+                        index + 1,
+                        escape_html(&item.title_en)
                     )
                 })
                 .collect::<Vec<_>>()
                 .join("")
-        })
-        .unwrap_or_default();
-    let lead_html = lead
-        .map(|item| {
-            format!(
-                "<div style=\"margin:22px 0;padding:20px;border-radius:18px 18px 18px 6px;background:#f7dfce;\">
-                   <div style=\"font-size:10px;font-weight:800;letter-spacing:.1em;color:#9f432d;text-transform:uppercase;\">{} · {:.0} {}</div>
-                   <h2 style=\"margin:8px 0;font-size:22px;line-height:1.25;letter-spacing:-.03em;color:#332d27;\"><a href=\"{}\" style=\"color:#332d27;text-decoration:none;\">{}</a></h2>
-                   <p style=\"margin:0;color:#675a4e;font-size:13px;line-height:1.65;\">{}</p>
-                   <p style=\"margin:12px 0 0;padding-top:10px;border-top:1px solid rgba(92,65,45,.14);color:#7b4d39;font-size:12px;line-height:1.6;\"><b>{}：</b> {}</p>
-                 </div>",
-                section_label(brief, "今日头条", "TODAY'S LEAD"),
-                item.score,
-                score_unit(brief),
-                escape_html(&item.url),
-                escape_html(title(item, brief)),
-                escape_html(summary_text(item, brief)),
-                section_label(brief, "为什么重要", "WHY IT MATTERS"),
-                escape_html(why(item, brief))
-            )
-        })
-        .unwrap_or_default();
+        });
+    let lead = zh_signals.first().copied();
+    let quick = zh_signals.iter().skip(1).take(2).collect::<Vec<_>>();
+    let lead_html = lead.map(|item| {
+        let english = matching_signal(&en_signals, item).unwrap_or(item);
+        format!(
+            "<div style=\"margin:22px 0;padding:20px;border-radius:18px 18px 18px 6px;background:#f7dfce;\">
+               <div style=\"font-size:10px;font-weight:800;letter-spacing:.1em;color:#9f432d;text-transform:uppercase;\">今日头条 · TODAY'S LEAD · {:.0} PTS</div>
+               <h2 style=\"margin:8px 0;font-size:22px;line-height:1.25;letter-spacing:-.03em;color:#332d27;\"><a href=\"{}\" style=\"color:#332d27;text-decoration:none;\">{}</a></h2>
+               <p style=\"margin:0;color:#675a4e;font-size:13px;line-height:1.65;\">{}</p>
+               <p style=\"margin:12px 0 0;padding-top:10px;border-top:1px solid rgba(92,65,45,.14);color:#7b4d39;font-size:12px;line-height:1.6;\"><b>为什么重要：</b> {}</p>
+               <div style=\"margin-top:16px;padding-top:14px;border-top:1px dashed rgba(92,65,45,.2);\">
+                 <div style=\"font-size:9px;font-weight:800;letter-spacing:.12em;color:#9f432d;text-transform:uppercase;\">ENGLISH</div>
+                 <h3 style=\"margin:6px 0 5px;font-size:16px;line-height:1.35;color:#332d27;\"><a href=\"{}\" style=\"color:#332d27;text-decoration:none;\">{}</a></h3>
+                 <p style=\"margin:0;color:#675a4e;font-size:12px;line-height:1.6;\">{}</p>
+               </div>
+             </div>",
+            item.score,
+            escape_html(&item.url),
+            escape_html(signal_title(item, LangSide::Zh)),
+            escape_html(signal_summary(item, LangSide::Zh)),
+            escape_html(why(item, primary)),
+            escape_html(&english.url),
+            escape_html(signal_title(english, LangSide::En)),
+            escape_html(signal_summary(english, LangSide::En))
+        )
+    })
+    .unwrap_or_default();
     let quick_html = if quick.is_empty() {
         String::new()
     } else {
@@ -318,88 +343,149 @@ pub fn email_digest_html(brief: &Brief) -> String {
             .iter()
             .enumerate()
             .map(|(index, item)| {
+                let english = matching_signal(&en_signals, item).unwrap_or(item);
                 format!(
-                    "<div style=\"padding:11px 0;border-top:1px solid #eee6da;font-size:13px;line-height:1.55;\">
-                       <span style=\"color:#d96849;font-family:monospace;font-size:10px;\">{:02}</span>
-                       <a href=\"{}\" style=\"color:#332d27;text-decoration:none;font-weight:600;\">{}</a>
-                       <span style=\"float:right;color:#c06645;font-weight:800;\">{:.0}</span>
+                    "<div style=\"padding:12px 0;border-top:1px solid #eee6da;\">
+                       <div style=\"font-size:13px;line-height:1.5;\">
+                         <span style=\"color:#d96849;font-family:monospace;font-size:10px;margin-right:7px;\">{:02}</span>
+                         <a href=\"{}\" style=\"color:#332d27;text-decoration:none;font-weight:700;\">{}</a>
+                         <span style=\"float:right;color:#c06645;font-weight:800;\">{:.0}</span>
+                       </div>
+                       <div style=\"margin:4px 0 0 27px;color:#8c8073;font-size:11px;line-height:1.5;\">{}</div>
                      </div>",
                     index + 2,
                     escape_html(&item.url),
-                    escape_html(title(item, brief)),
-                    item.score
+                    escape_html(signal_title(item, LangSide::Zh)),
+                    item.score,
+                    escape_html(signal_title(english, LangSide::En))
                 )
             })
             .collect::<Vec<_>>()
             .join("");
         format!(
-            "<h3 style=\"margin:22px 0 4px;font-size:14px;color:#786c5f;\">{}</h3>{}",
-            section_label(brief, "再看两条", "TWO MORE"),
+            "<h3 style=\"margin:22px 0 4px;font-size:14px;color:#786c5f;\">再看两条 · TWO MORE</h3>{}",
             rows
         )
     };
-    let action_html = action
+    let action_html = primary
+        .action_plan
+        .as_ref()
+        .and_then(|plan| plan.top_action.as_ref())
         .map(|action| {
+            let experiments_zh = primary
+                .action_plan
+                .as_ref()
+                .map(|plan| {
+                    plan.experiments
+                        .iter()
+                        .take(2)
+                        .map(|experiment| {
+                            format!(
+                                "<div style=\"margin-top:5px;color:#596449;font-size:12px;\">↳ {}</div>",
+                                escape_html(&experiment.title)
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                        .join("")
+                })
+                .unwrap_or_default();
+            let experiments_en = primary
+                .action_plan
+                .as_ref()
+                .map(|plan| {
+                    plan.experiments
+                        .iter()
+                        .take(2)
+                        .filter(|experiment| !experiment.title_en.is_empty())
+                        .map(|experiment| {
+                            format!(
+                                "<div style=\"margin-top:5px;color:#72805c;font-size:11px;\">↳ {}</div>",
+                                escape_html(&experiment.title_en)
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                        .join("")
+                })
+                .unwrap_or_default();
             format!(
                 "<div style=\"margin-top:24px;padding:18px;border-radius:18px;background:#e5ebdc;\">
-                   <div style=\"font-size:10px;font-weight:800;letter-spacing:.1em;color:#72805c;text-transform:uppercase;\">{} · ToT</div>
+                   <div style=\"font-size:10px;font-weight:800;letter-spacing:.1em;color:#72805c;text-transform:uppercase;\">今天可以做什么 · TODAY'S MOVE · ToT</div>
                    <h3 style=\"margin:7px 0 5px;font-size:17px;line-height:1.35;color:#332d27;\">{}</h3>
                    <p style=\"margin:0;color:#596449;font-size:12px;line-height:1.6;\">{}</p>{}
+                   <div style=\"margin-top:14px;padding-top:12px;border-top:1px dashed rgba(89,100,73,.24);\">
+                     <div style=\"font-size:9px;font-weight:800;letter-spacing:.12em;color:#72805c;text-transform:uppercase;\">ENGLISH</div>
+                     <h3 style=\"margin:6px 0 4px;font-size:14px;line-height:1.4;color:#332d27;\">{}</h3>
+                     <p style=\"margin:0;color:#596449;font-size:11px;line-height:1.55;\">{}</p>{}
+                   </div>
                  </div>",
-                section_label(brief, "今天可以做什么", "TODAY'S MOVE"),
                 escape_html(&action.title),
                 escape_html(&action.why_now),
-                experiments
+                experiments_zh,
+                escape_html(action_title_en(action)),
+                escape_html(action_why_en(action)),
+                experiments_en
             )
         })
         .unwrap_or_default();
-    let brief_link = public_brief_url()
+    let (brief_link, fallback_link) = public_brief_url()
         .map(|url| {
-            format!(
-                "<a href=\"{}\" style=\"display:inline-block;margin-top:24px;padding:10px 16px;border-radius:999px;background:#332d27;color:#fffdf8;text-decoration:none;font-size:12px;font-weight:700;\">{}</a>",
-                escape_html(&url),
-                section_label(brief, "看完整简报 →", "Open full brief →")
+            (
+                format!(
+                    "<a href=\"{}\" style=\"display:inline-block;margin-top:24px;padding:11px 18px;border-radius:999px;background:#332d27;color:#fffdf8;text-decoration:none;font-size:12px;font-weight:700;\">看完整简报 · Open full brief →</a>",
+                    escape_html(&url)
+                ),
+                format!(
+                    "<p style=\"margin:10px 0 0;color:#a09383;font-size:10px;line-height:1.6;\">按钮无法打开时，请复制：<a href=\"{}\" style=\"color:#9f432d;\">{}</a></p>",
+                    escape_html(&url),
+                    escape_html(&url)
+                ),
             )
         })
         .unwrap_or_default();
-    let heading = match (is_zh(brief), brief.slot.as_str()) {
-        (true, "evening") => "晚上好，<br>今天再看三件事。",
-        (true, _) => "早上好，<br>今天先看这三件事。",
-        (false, "evening") => "Good evening,<br>three things worth a second look.",
-        (false, _) => "Good morning,<br>three things worth your attention.",
+    let heading = match primary.slot.as_str() {
+        "evening" => "晚上好，<br>今天再看三件事。",
+        _ => "早上好，<br>今天先看这三件事。",
     };
-    let intro = section_label(
-        brief,
-        "我用 117 个信源替你读完，留下真正值得判断和行动的部分。",
-        "I read 117 sources so you can focus on what is worth judging and acting on.",
-    );
-    let footer = section_label(brief, "117 个信源", "117 sources");
+    let heading_en = match primary.slot.as_str() {
+        "evening" => "Good evening. Three things worth a second look.",
+        _ => "Good morning. Three things worth your attention.",
+    };
+    let letter_en = match primary.slot.as_str() {
+        "evening" => "EVENING LETTER",
+        _ => "MORNING LETTER",
+    };
 
     format!(
         "<!doctype html><html><body style=\"margin:0;padding:0;background:#f3ece2;font-family:'Avenir Next','PingFang SC','Noto Sans SC',Arial,sans-serif;color:#332d27;\">
           <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"background:#f3ece2;padding:28px 12px;\"><tr><td align=\"center\">
             <table role=\"presentation\" width=\"600\" cellspacing=\"0\" cellpadding=\"0\" style=\"width:100%;max-width:600px;background:#fffdf8;border:1px solid #e8ded0;border-radius:22px;overflow:hidden;\"><tr><td style=\"padding:30px 30px 26px;\">
-              <div style=\"font-size:11px;letter-spacing:.12em;color:#a09383;text-transform:uppercase;\">Po Radar · {} · {}</div>
+              <div style=\"font-size:11px;letter-spacing:.12em;color:#a09383;text-transform:uppercase;\">Po Radar · {} / {} · {}</div>
               <h1 style=\"margin:8px 0 4px;font-size:30px;line-height:1.1;letter-spacing:-.045em;color:#332d27;\">{}</h1>
-              <p style=\"margin:10px 0 0;color:#786c5f;font-size:13px;line-height:1.7;\">{}</p>
-              <div style=\"margin:22px 0;padding:18px 20px;border-radius:18px;background:#fbf3e6;\"><div style=\"font-size:10px;font-weight:800;letter-spacing:.1em;color:#a09383;\">{}</div>{}</div>
-              {}{}{}{}
-              <p style=\"margin:22px 0 0;color:#a09383;font-size:10px;line-height:1.6;\">Po Radar · {} · {}</p>
+              <p style=\"margin:10px 0 0;color:#786c5f;font-size:13px;line-height:1.7;\">我用 117 个信源替你读完，保留中英双语判断与原文入口。<br><span style=\"font-size:12px;\">{} A bilingual edit of 117 sources, with sources intact.</span></p>
+              <div style=\"margin:22px 0;padding:18px 20px;border-radius:18px;background:#fbf3e6;\">
+                <div style=\"font-size:10px;font-weight:800;letter-spacing:.1em;color:#a09383;\">60 秒版 · 60-SECOND BRIEF</div>
+                {}
+                <div style=\"margin:14px 0 7px;padding-top:11px;border-top:1px solid #e8ded0;font-size:10px;font-weight:800;letter-spacing:.1em;color:#a09383;\">ENGLISH</div>
+                {}
+              </div>
+              {}{}{}{}{}
+              <p style=\"margin:22px 0 0;color:#a09383;font-size:10px;line-height:1.6;\">Po Radar · 117 个信源 · {}</p>
             </td></tr></table>
           </td></tr></table>
         </body></html>",
-        escape_html(letter_label(brief)),
-        escape_html(&brief.date),
+        escape_html(letter_label(primary)),
+        letter_en,
+        escape_html(&primary.date),
         heading,
-        escape_html(intro),
-        section_label(brief, "60 秒版", "60-SECOND BRIEF"),
-        summary,
+        heading_en,
+        summary_zh,
+        summary_en,
         lead_html,
         quick_html,
         action_html,
         brief_link,
-        footer,
-        escape_html(&brief.date)
+        fallback_link,
+        escape_html(&primary.date)
     )
 }
 
@@ -420,6 +506,68 @@ fn signals(brief: &Brief) -> Vec<&TopSignal> {
     }
     out.sort_by(|a, b| b.score.total_cmp(&a.score));
     out
+}
+
+#[derive(Clone, Copy)]
+enum LangSide {
+    Zh,
+    En,
+}
+
+fn matching_signal<'a>(pool: &[&'a TopSignal], item: &TopSignal) -> Option<&'a TopSignal> {
+    pool.iter()
+        .find(|candidate| candidate.story_id == item.story_id)
+        .copied()
+}
+
+fn signal_title(item: &TopSignal, side: LangSide) -> &str {
+    match side {
+        LangSide::Zh if item.title_zh.is_empty() => &item.title_en,
+        LangSide::Zh => &item.title_zh,
+        LangSide::En if item.title_en.is_empty() => &item.title_zh,
+        LangSide::En => &item.title_en,
+    }
+}
+
+fn signal_summary(item: &TopSignal, side: LangSide) -> &str {
+    match side {
+        LangSide::Zh if item.summary_zh.is_empty() => &item.summary_en,
+        LangSide::Zh => &item.summary_zh,
+        LangSide::En if item.summary_en.is_empty() => &item.summary_zh,
+        LangSide::En => &item.summary_en,
+    }
+}
+
+fn action_title<'a>(action: &'a ActionOption, brief: &Brief) -> &'a str {
+    if !is_zh(brief) && !action.title_en.is_empty() {
+        &action.title_en
+    } else {
+        &action.title
+    }
+}
+
+fn action_why<'a>(action: &'a ActionOption, brief: &Brief) -> &'a str {
+    if !is_zh(brief) && !action.why_now_en.is_empty() {
+        &action.why_now_en
+    } else {
+        &action.why_now
+    }
+}
+
+fn action_title_en(action: &ActionOption) -> &str {
+    if action.title_en.is_empty() {
+        &action.title
+    } else {
+        &action.title_en
+    }
+}
+
+fn action_why_en(action: &ActionOption) -> &str {
+    if action.why_now_en.is_empty() {
+        &action.why_now
+    } else {
+        &action.why_now_en
+    }
 }
 
 fn executive_summary(brief: &Brief, signals: &[&TopSignal]) -> String {
@@ -515,10 +663,14 @@ fn summary_text<'a>(item: &'a TopSignal, brief: &Brief) -> &'a str {
 }
 
 fn why<'a>(item: &'a TopSignal, brief: &Brief) -> &'a str {
-    if !item.why_it_matters.is_empty() {
-        &item.why_it_matters
-    } else if is_zh(brief) {
-        "这条信号可能改变接下来一段时间的产品或技术判断。"
+    if is_zh(brief) {
+        if !item.why_it_matters.is_empty() {
+            &item.why_it_matters
+        } else {
+            "这条信号可能改变接下来一段时间的产品或技术判断。"
+        }
+    } else if !item.why_it_matters_en.is_empty() {
+        &item.why_it_matters_en
     } else {
         "This signal may change the next set of product or technology decisions."
     }
@@ -656,6 +808,7 @@ mod tests {
             summary_zh: "新的模型支持更长上下文和工具调用。".into(),
             summary_en: "The model adds longer context and tool use.".into(),
             why_it_matters: "模型能力与工具调用正在合并。".into(),
+            why_it_matters_en: "Model capabilities and tool use are converging.".into(),
             score: 93.0,
             url: "https://example.com/openai".into(),
             ..Default::default()
@@ -673,7 +826,9 @@ mod tests {
         };
         let action = ActionOption {
             title: "做一次 30 分钟验证".into(),
+            title_en: "Run a 30-minute validation".into(),
             why_now: "先验证最小假设。".into(),
+            why_now_en: "Validate the smallest assumption first.".into(),
             impact: 8.0,
             feasibility: 8.0,
             speed: 7.0,
@@ -697,7 +852,9 @@ mod tests {
                 top_action: Some(action.clone()),
                 experiments: vec![action],
                 watchlist: vec!["关注社区反馈".into()],
+                watchlist_en: vec!["Watch community feedback".into()],
                 summary: String::new(),
+                summary_en: String::new(),
                 model: "test".into(),
             }),
             ..Default::default()
@@ -714,11 +871,18 @@ mod tests {
         assert!(rendered.contains("看完整简报"));
         assert!(!rendered.contains("\"tag\":\"action\""));
         assert!(rendered.contains("\"type\":\"open_url\""));
+        assert!(rendered.contains("\"pc_url\""));
+        assert!(rendered.contains("\"ios_url\""));
+        assert!(rendered.contains("\"android_url\""));
         assert!(wecom_digest(&brief).contains("今天可以做什么"));
         assert!(telegram_digest(&brief).contains("<b>Po Radar"));
         assert!(wecom_digest(&brief).len() <= 4096);
         assert!(telegram_digest(&brief).len() <= 4096);
-        assert!(email_digest_html(&brief).contains("max-width:600px"));
+        let email = email_digest_html(&brief, None);
+        assert!(email.contains("max-width:600px"));
+        assert!(email.contains("OpenAI 发布新的多模态推理模型"));
+        assert!(email.contains("OpenAI introduces a new multimodal reasoning model"));
+        assert!(email.contains(&public_brief_url().unwrap()));
     }
 
     #[test]
@@ -737,7 +901,28 @@ mod tests {
         assert!(card.contains("Evening Letter"));
         assert!(card.contains("Good evening."));
         assert!(card.contains("pts"));
+        assert!(card.contains("Model capabilities and tool use are converging."));
+        assert!(!card.contains("模型能力与工具调用正在合并。"));
         assert!(wecom_digest(&brief).contains("Good evening."));
-        assert!(email_digest_html(&brief).contains("Good evening"));
+        let mut zh = sample_brief();
+        zh.slot = "evening".into();
+        let email = email_digest_html(&zh, Some(&brief));
+        assert!(email.contains("Good evening"));
+        assert!(email.contains("晚上好"));
+    }
+
+    #[test]
+    #[ignore]
+    fn write_bilingual_email_preview() {
+        let path = std::env::var("PO_EMAIL_PREVIEW")
+            .unwrap_or_else(|_| "/tmp/po-email-preview.html".into());
+        let zh = sample_brief();
+        let mut en = zh.clone();
+        en.lang = "en".into();
+        en.executive_summary = vec![
+            "OpenAI introduces a new multimodal reasoning model (93 pts)".into(),
+            "DeepSeek cuts API prices (88 pts)".into(),
+        ];
+        std::fs::write(path, email_digest_html(&zh, Some(&en))).unwrap();
     }
 }

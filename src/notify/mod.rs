@@ -25,20 +25,28 @@ pub async fn send_alert(cfg: &DeliverySection, alert: &Alert) -> Vec<DeliveryRec
     send_all(cfg, &text, "AI 高分情报").await
 }
 
-pub async fn send_digest(cfg: &DeliverySection, brief: &Brief) -> Vec<DeliveryReceipt> {
+pub async fn send_digest(cfg: &DeliverySection, briefs: &[Brief]) -> Vec<DeliveryReceipt> {
+    let Some(primary) = briefs
+        .iter()
+        .find(|brief| brief.lang.starts_with("zh"))
+        .or_else(|| briefs.first())
+    else {
+        return Vec::new();
+    };
+    let english = briefs.iter().find(|brief| brief.lang.starts_with("en"));
     let client = Client::builder()
         .timeout(std::time::Duration::from_secs(30))
         .build()
         .unwrap_or_default();
     let mut receipts = Vec::new();
-    let title = templates::digest_subject(brief);
+    let title = templates::digest_subject(primary);
 
     if cfg.feishu.enabled {
         receipts.push(
             send_feishu_card(
                 &client,
                 &cfg.feishu.url_env,
-                templates::feishu_digest_card(brief),
+                templates::feishu_digest_card(primary),
             )
             .await
             .unwrap_or_else(|e| receipt("feishu", false, format!("{e:#}"))),
@@ -47,9 +55,13 @@ pub async fn send_digest(cfg: &DeliverySection, brief: &Brief) -> Vec<DeliveryRe
 
     if cfg.wecom.enabled {
         receipts.push(
-            send_wecom(&client, &cfg.wecom.url_env, &templates::wecom_digest(brief))
-                .await
-                .unwrap_or_else(|e| receipt("wecom", false, format!("{e:#}"))),
+            send_wecom(
+                &client,
+                &cfg.wecom.url_env,
+                &templates::wecom_digest(primary),
+            )
+            .await
+            .unwrap_or_else(|e| receipt("wecom", false, format!("{e:#}"))),
         );
     }
 
@@ -59,7 +71,7 @@ pub async fn send_digest(cfg: &DeliverySection, brief: &Brief) -> Vec<DeliveryRe
                 &client,
                 &cfg.dingtalk.url_env,
                 &title,
-                &templates::wecom_digest(brief),
+                &templates::wecom_digest(primary),
             )
             .await
             .unwrap_or_else(|e| receipt("dingtalk", false, format!("{e:#}"))),
@@ -71,7 +83,7 @@ pub async fn send_digest(cfg: &DeliverySection, brief: &Brief) -> Vec<DeliveryRe
             send_telegram(
                 &client,
                 cfg,
-                &templates::telegram_digest(brief),
+                &templates::telegram_digest(primary),
                 Some("HTML"),
             )
             .await
@@ -81,7 +93,7 @@ pub async fn send_digest(cfg: &DeliverySection, brief: &Brief) -> Vec<DeliveryRe
 
     if cfg.email.enabled {
         receipts.push(
-            send_email_html(cfg, &title, &templates::email_digest_html(brief))
+            send_email_html(cfg, &title, &templates::email_digest_html(primary, english))
                 .await
                 .unwrap_or_else(|e| receipt("email", false, format!("{e:#}"))),
         );

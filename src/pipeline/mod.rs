@@ -256,7 +256,7 @@ impl Pipeline {
             self.store.save_action_plan(&date, &action_plan).await?;
             self.write_actions_public(&action_plan)?;
             let mut brief_count = 0usize;
-            let mut notify_brief = None;
+            let mut briefs = Vec::new();
             for lang in &self.cfg.pipeline.languages {
                 let brief = self
                     .llm
@@ -264,14 +264,10 @@ impl Pipeline {
                     .await?;
                 self.store.save_brief(&brief).await?;
                 self.write_brief_public(&brief)?;
-                if notify_brief.is_none() {
-                    notify_brief = Some(brief);
-                }
+                briefs.push(brief);
                 brief_count += 1;
             }
-            if let Some(brief) = &notify_brief {
-                let _ = notify::send_digest(&self.cfg.delivery, brief).await;
-            }
+            let _ = notify::send_digest(&self.cfg.delivery, &briefs).await;
             run.briefs = brief_count;
         }
 
@@ -302,7 +298,7 @@ impl Pipeline {
             scored: previous.scored,
             ..RunStats::default()
         };
-        let mut notify_brief = None;
+        let mut briefs = Vec::new();
         for lang in &self.cfg.pipeline.languages {
             let brief = self
                 .llm
@@ -310,14 +306,10 @@ impl Pipeline {
                 .await?;
             self.store.save_brief(&brief).await?;
             self.write_brief_public(&brief)?;
-            if notify_brief.is_none() {
-                notify_brief = Some(brief);
-            }
+            briefs.push(brief);
             run.briefs += 1;
         }
-        if let Some(brief) = &notify_brief {
-            let _ = notify::send_digest(&self.cfg.delivery, brief).await;
-        }
+        let _ = notify::send_digest(&self.cfg.delivery, &briefs).await;
         run.finished_at = Some(Utc::now());
         run.status = "success".into();
         self.store.save_run(&run).await?;

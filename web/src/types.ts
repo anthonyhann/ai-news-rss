@@ -22,6 +22,7 @@ export interface Story {
   summary_zh: string;
   summary_en: string;
   why_it_matters?: string;
+  why_it_matters_en?: string;
   background?: string;
   community?: string;
   tags?: string[];
@@ -45,7 +46,9 @@ export interface BriefSummary {
 
 export interface ActionOption {
   title: string;
+  title_en?: string;
   why_now: string;
+  why_now_en?: string;
   impact: number;
   feasibility: number;
   speed: number;
@@ -59,7 +62,9 @@ export interface ActionPlan {
   top_action?: ActionOption;
   experiments: ActionOption[];
   watchlist: string[];
+  watchlist_en?: string[];
   summary: string;
+  summary_en?: string;
   model?: string;
 }
 
@@ -104,6 +109,7 @@ export interface Brief {
       summary_zh: string;
       summary_en: string;
       why_it_matters: string;
+      why_it_matters_en?: string;
       background: string;
       community: string;
       tags: string[];
