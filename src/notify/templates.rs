@@ -34,18 +34,28 @@ pub fn feishu_digest_card(brief: &Brief) -> Value {
 
     if let Some(item) = lead {
         elements.push(json!({"tag": "hr"}));
+        let tip_line = if user_tip(item, brief).is_empty() {
+            String::new()
+        } else {
+            format!(
+                "\n\n**{}** {}",
+                section_label(brief, "今天可以怎么用", "TRY IT TODAY"),
+                user_tip(item, brief)
+            )
+        };
         elements.push(json!({
             "tag": "markdown",
             "content": format!(
-                "**{}**\n### [{}]({}) · **{:.0} {}**\n\n{}\n\n**{}** {}",
+                "**{}**\n### [{}]({}) · **{:.0} {}**\n\n{}\n\n**{}** {}{}",
                 section_label(brief, "今日头条", "TODAY'S LEAD"),
                 title(item, brief),
                 item.url,
                 item.score,
                 score_unit(brief),
                 summary_text(item, brief),
-                section_label(brief, "为什么重要", "WHY IT MATTERS"),
-                why(item, brief)
+                section_label(brief, "这跟你有什么关系", "WHAT THIS MEANS FOR YOU"),
+                why(item, brief),
+                tip_line
             )
         }));
     }
@@ -162,9 +172,16 @@ pub fn wecom_digest(brief: &Brief) -> String {
             title(item, brief),
             item.url,
             summary_text(item, brief),
-            section_label(brief, "为什么重要", "WHY IT MATTERS"),
+            section_label(brief, "这跟你有什么关系", "WHAT THIS MEANS FOR YOU"),
             why(item, brief)
         ));
+        if !user_tip(item, brief).is_empty() {
+            out.push_str(&format!(
+                "**{}：** {}\n\n",
+                section_label(brief, "今天可以怎么用", "TRY IT TODAY"),
+                user_tip(item, brief)
+            ));
+        }
     }
 
     if signals.len() > 1 {
@@ -237,9 +254,16 @@ pub fn telegram_digest(brief: &Brief) -> String {
             escape_html(&item.url),
             escape_html(title(item, brief)),
             escape_html(summary_text(item, brief)),
-            section_label(brief, "为什么重要", "WHY IT MATTERS"),
+            section_label(brief, "这跟你有什么关系", "WHAT THIS MEANS FOR YOU"),
             escape_html(why(item, brief))
         ));
+        if !user_tip(item, brief).is_empty() {
+            out.push_str(&format!(
+                "<b>{}：</b> {}\n\n",
+                section_label(brief, "今天可以怎么用", "TRY IT TODAY"),
+                escape_html(user_tip(item, brief))
+            ));
+        }
     }
 
     if signals.len() > 1 {
@@ -313,16 +337,34 @@ pub fn email_digest_html(primary: &Brief, secondary: Option<&Brief>) -> String {
     let quick = zh_signals.iter().skip(1).take(2).collect::<Vec<_>>();
     let lead_html = lead.map(|item| {
         let english = matching_signal(&en_signals, item).unwrap_or(item);
+        let tip_zh = if item.user_tip_zh.is_empty() {
+            String::new()
+        } else {
+            format!(
+                "<p style=\"margin:10px 0 0;padding:10px 12px;border-radius:12px;background:#e5ebdc;color:#596449;font-size:12px;line-height:1.6;\"><b>今天可以怎么用：</b> {}</p>",
+                escape_html(&item.user_tip_zh)
+            )
+        };
+        let tip_en = if english.user_tip_en.is_empty() {
+            String::new()
+        } else {
+            format!(
+                "<p style=\"margin:8px 0 0;padding:9px 11px;border-radius:11px;background:#edf1e7;color:#596449;font-size:11px;line-height:1.55;\"><b>Try it today:</b> {}</p>",
+                escape_html(&english.user_tip_en)
+            )
+        };
         format!(
             "<div style=\"margin:22px 0;padding:20px;border-radius:18px 18px 18px 6px;background:#f7dfce;\">
                <div style=\"font-size:10px;font-weight:800;letter-spacing:.1em;color:#9f432d;text-transform:uppercase;\">今日头条 · TODAY'S LEAD · {:.0} PTS</div>
                <h2 style=\"margin:8px 0;font-size:22px;line-height:1.25;letter-spacing:-.03em;color:#332d27;\"><a href=\"{}\" style=\"color:#332d27;text-decoration:none;\">{}</a></h2>
                <p style=\"margin:0;color:#675a4e;font-size:13px;line-height:1.65;\">{}</p>
-               <p style=\"margin:12px 0 0;padding-top:10px;border-top:1px solid rgba(92,65,45,.14);color:#7b4d39;font-size:12px;line-height:1.6;\"><b>为什么重要：</b> {}</p>
+               <p style=\"margin:12px 0 0;padding-top:10px;border-top:1px solid rgba(92,65,45,.14);color:#7b4d39;font-size:12px;line-height:1.6;\"><b>这跟你有什么关系：</b> {}</p>
+               {}
                <div style=\"margin-top:16px;padding-top:14px;border-top:1px dashed rgba(92,65,45,.2);\">
                  <div style=\"font-size:9px;font-weight:800;letter-spacing:.12em;color:#9f432d;text-transform:uppercase;\">ENGLISH</div>
                  <h3 style=\"margin:6px 0 5px;font-size:16px;line-height:1.35;color:#332d27;\"><a href=\"{}\" style=\"color:#332d27;text-decoration:none;\">{}</a></h3>
                  <p style=\"margin:0;color:#675a4e;font-size:12px;line-height:1.6;\">{}</p>
+                 {}
                </div>
              </div>",
             item.score,
@@ -330,9 +372,11 @@ pub fn email_digest_html(primary: &Brief, secondary: Option<&Brief>) -> String {
             escape_html(signal_title(item, LangSide::Zh)),
             escape_html(signal_summary(item, LangSide::Zh)),
             escape_html(why(item, primary)),
+            tip_zh,
             escape_html(&english.url),
             escape_html(signal_title(english, LangSide::En)),
-            escape_html(signal_summary(english, LangSide::En))
+            escape_html(signal_summary(english, LangSide::En)),
+            tip_en
         )
     })
     .unwrap_or_default();
@@ -461,7 +505,7 @@ pub fn email_digest_html(primary: &Brief, secondary: Option<&Brief>) -> String {
             <table role=\"presentation\" width=\"600\" cellspacing=\"0\" cellpadding=\"0\" style=\"width:100%;max-width:600px;background:#fffdf8;border:1px solid #e8ded0;border-radius:22px;overflow:hidden;\"><tr><td style=\"padding:30px 30px 26px;\">
               <div style=\"font-size:11px;letter-spacing:.12em;color:#a09383;text-transform:uppercase;\">Po Radar · {} / {} · {}</div>
               <h1 style=\"margin:8px 0 4px;font-size:30px;line-height:1.1;letter-spacing:-.045em;color:#332d27;\">{}</h1>
-              <p style=\"margin:10px 0 0;color:#786c5f;font-size:13px;line-height:1.7;\">我用 117 个信源替你读完，保留中英双语判断与原文入口。<br><span style=\"font-size:12px;\">{} A bilingual edit of 117 sources, with sources intact.</span></p>
+              <p style=\"margin:10px 0 0;color:#786c5f;font-size:13px;line-height:1.7;\">我用 117 个信源替你读完，只讲发生了什么、跟你有什么关系、今天能怎么用。<br><span style=\"font-size:12px;\">{} No model jargon. What happened, what it means for you, and what you can try today.</span></p>
               <div style=\"margin:22px 0;padding:18px 20px;border-radius:18px;background:#fbf3e6;\">
                 <div style=\"font-size:10px;font-weight:800;letter-spacing:.1em;color:#a09383;\">60 秒版 · 60-SECOND BRIEF</div>
                 {}
@@ -676,6 +720,18 @@ fn why<'a>(item: &'a TopSignal, brief: &Brief) -> &'a str {
     }
 }
 
+fn user_tip<'a>(item: &'a TopSignal, brief: &Brief) -> &'a str {
+    if is_zh(brief) {
+        if !item.user_tip_zh.is_empty() {
+            &item.user_tip_zh
+        } else {
+            &item.user_tip_en
+        }
+    } else {
+        &item.user_tip_en
+    }
+}
+
 fn is_zh(brief: &Brief) -> bool {
     brief.lang.starts_with("zh")
 }
@@ -733,8 +789,8 @@ fn intro(brief: &Brief, count: usize) -> String {
 fn sources_line(brief: &Brief) -> &'static str {
     section_label(
         brief,
-        "用 117 个信源替你读完，留下判断和行动的空间。",
-        "I read 117 sources so you can focus on judgment and action.",
+        "用 117 个信源替你读完，只讲人话：发生了什么、跟你有什么关系、今天能怎么用。",
+        "I read 117 sources and keep it plain: what happened, what it means for you, and what you can try today.",
     )
 }
 
@@ -809,6 +865,10 @@ mod tests {
             summary_en: "The model adds longer context and tool use.".into(),
             why_it_matters: "模型能力与工具调用正在合并。".into(),
             why_it_matters_en: "Model capabilities and tool use are converging.".into(),
+            user_tip_zh: "拿一张工作截图，让新模型整理成三条待办，看看是否比现在快。".into(),
+            user_tip_en:
+                "Give the new model a work screenshot and ask for three action items, then compare the speed."
+                    .into(),
             score: 93.0,
             url: "https://example.com/openai".into(),
             ..Default::default()
@@ -820,6 +880,9 @@ mod tests {
             summary_zh: "推理成本发生变化。".into(),
             summary_en: "Inference cost changes.".into(),
             why_it_matters: "值得做一次成本验证。".into(),
+            user_tip_zh: "用你最近一次 API 账单估算，看看同样的任务能省多少钱。".into(),
+            user_tip_en:
+                "Use your latest API bill to estimate how much the same task would cost now.".into(),
             score: 88.0,
             url: "https://example.com/deepseek".into(),
             ..Default::default()
@@ -869,6 +932,8 @@ mod tests {
         assert!(rendered.contains("60 秒版"));
         assert!(rendered.contains("今日头条"));
         assert!(rendered.contains("看完整简报"));
+        assert!(rendered.contains("这跟你有什么关系"));
+        assert!(rendered.contains("今天可以怎么用"));
         assert!(!rendered.contains("\"tag\":\"action\""));
         assert!(rendered.contains("\"type\":\"open_url\""));
         assert!(rendered.contains("\"pc_url\""));
@@ -882,6 +947,7 @@ mod tests {
         assert!(email.contains("max-width:600px"));
         assert!(email.contains("OpenAI 发布新的多模态推理模型"));
         assert!(email.contains("OpenAI introduces a new multimodal reasoning model"));
+        assert!(email.contains("拿一张工作截图"));
         assert!(email.contains(&public_brief_url().unwrap()));
     }
 
@@ -902,6 +968,7 @@ mod tests {
         assert!(card.contains("Good evening."));
         assert!(card.contains("pts"));
         assert!(card.contains("Model capabilities and tool use are converging."));
+        assert!(card.contains("TRY IT TODAY"));
         assert!(!card.contains("模型能力与工具调用正在合并。"));
         assert!(wecom_digest(&brief).contains("Good evening."));
         let mut zh = sample_brief();

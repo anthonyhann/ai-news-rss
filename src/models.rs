@@ -210,6 +210,10 @@ pub struct Score {
     #[serde(default)]
     pub summary_en: Option<String>,
     #[serde(default)]
+    pub user_tip_zh: Option<String>,
+    #[serde(default)]
+    pub user_tip_en: Option<String>,
+    #[serde(default)]
     pub relevance: f64,
     #[serde(default)]
     pub impact: f64,
@@ -263,6 +267,10 @@ pub struct Story {
     #[serde(default)]
     pub why_it_matters_en: String,
     #[serde(default)]
+    pub user_tip_zh: String,
+    #[serde(default)]
+    pub user_tip_en: String,
+    #[serde(default)]
     pub background: String,
     #[serde(default)]
     pub community: String,
@@ -311,6 +319,10 @@ pub struct TopSignal {
     pub why_it_matters: String,
     #[serde(default)]
     pub why_it_matters_en: String,
+    #[serde(default)]
+    pub user_tip_zh: String,
+    #[serde(default)]
+    pub user_tip_en: String,
     #[serde(default)]
     pub background: String,
     #[serde(default)]

@@ -420,8 +420,22 @@ fn fill_story_from_score(story: &mut Story, score: &Score) {
             story.summary_en = summary.clone();
         }
     }
+    if let Some(tip) = &score.user_tip_zh {
+        if !tip.trim().is_empty() {
+            story.user_tip_zh = tip.clone();
+        }
+    }
+    if let Some(tip) = &score.user_tip_en {
+        if !tip.trim().is_empty() {
+            story.user_tip_en = tip.clone();
+        }
+    }
     if story.why_it_matters.is_empty() {
-        story.why_it_matters = score.reason.clone();
+        story.why_it_matters = "这条消息可能影响你正在用的 AI 工具、价格或工作方式。".into();
+    }
+    if story.why_it_matters_en.is_empty() {
+        story.why_it_matters_en =
+            "This may change the AI tools, prices or workflows you already use.".into();
     }
     if story.summary_zh.is_empty() {
         story.summary_zh = story.title_zh.clone();

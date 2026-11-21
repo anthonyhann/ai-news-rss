@@ -49,7 +49,7 @@ AI 信息散落在实验室博客、X、YouTube、Reddit、Hacker News、GitHub�
 | 信源 | RSS/Atom、Hacker News、Reddit、GitHub Releases、OSS Insight、Telegram、YouTube、arXiv、微信公众号 RSS 桥、X List |
 | 去重 | 规范化 URL、SHA-256 内容哈希、SimHash 分桶、标题 Jaccard、模型事件合并 |
 | 评分 | 0–100 编辑评分，含非 AI、传言、无原文链接、过期内容的硬上限 |
-| 简报 | 中英双语、今日结论、Top Signals、背景知识、社区讨论、原文引用 |
+| 简报 | 面向普通 AI 用户的中英双语解读：发生了什么、跟你有什么关系、今天可以怎么用；附背景知识与原文引用 |
 | 行动 | 思维树生成 3–5 个候选行动，按影响、可行性、见效速度、置信度选择；候选评分在简报中公开可见 |
 | 告警 | ≥90 分、置信度 ≥0.80、24 小时故事去重，支持实质性更新 |
 | 推送 | 企业微信、飞书、钉钉、Telegram、邮件、网页发布 |

@@ -484,7 +484,7 @@ function Today(props: {
           <SourcePulse sources={feed.sources} lang={lang} t={t} />
           <div className="soft-note">
             <PoAvatar size="sm" />
-            <p>{t("先看为什么重要，再看发生了什么。每一条结论都能回到原文。", "Read why it matters before what happened. Every claim can return to its source.")}</p>
+            <p>{t("先看发生了什么，再看这跟你有什么关系，最后看今天能怎么用。每一条结论都能回到原文。", "See what happened, what it means for you, and what you can try today. Every claim links back to its source.")}</p>
           </div>
         </aside>
       </section>
@@ -522,8 +522,14 @@ function StoryCard(props: {
         <p className="signal-summary">{localSummary(story, lang)}</p>
         {localizedStoryWhy(story, lang) && (
           <div className="why-bubble">
-            <span className="bubble-label">{t("为什么重要", "WHY IT MATTERS")}</span>
+            <span className="bubble-label">{t("这跟你有什么关系", "WHAT THIS MEANS FOR YOU")}</span>
             <p>{localizedStoryWhy(story, lang)}</p>
+          </div>
+        )}
+        {localizedStoryTip(story, lang) && (
+          <div className="why-bubble tip-bubble">
+            <span className="bubble-label">{t("今天可以怎么用", "TRY IT TODAY")}</span>
+            <p>{localizedStoryTip(story, lang)}</p>
           </div>
         )}
         <div className="signal-tags">
@@ -674,8 +680,20 @@ function Briefs(props: {
                   <p>{briefLanguage === "zh" ? item.summary_zh : item.summary_en}</p>
                   {localizedWhy(item, briefLanguage) && (
                     <div className="why-bubble">
-                      <span className="bubble-label">{t("为什么重要", "WHY IT MATTERS")}</span>
+                      <span className="bubble-label">{t("这跟你有什么关系", "WHAT THIS MEANS FOR YOU")}</span>
                       <p>{localizedWhy(item, briefLanguage)}</p>
+                    </div>
+                  )}
+                  {localizedBackground(item, briefLanguage) && (
+                    <div className="why-bubble context-bubble">
+                      <span className="bubble-label">{t("先补一句背景", "QUICK CONTEXT")}</span>
+                      <p>{localizedBackground(item, briefLanguage)}</p>
+                    </div>
+                  )}
+                  {localizedTip(item, briefLanguage) && (
+                    <div className="why-bubble tip-bubble">
+                      <span className="bubble-label">{t("今天可以怎么用", "TRY IT TODAY")}</span>
+                      <p>{localizedTip(item, briefLanguage)}</p>
                     </div>
                   )}
                   <div className="signal-links">
@@ -992,6 +1010,19 @@ function localizedActionText(zh: string, en: string | undefined, lang: Lang) {
 
 function localizedStoryWhy(story: Story, lang: Lang) {
   return lang === "zh" ? story.why_it_matters || "" : story.why_it_matters_en || "";
+}
+
+function localizedStoryTip(story: Story, lang: Lang) {
+  return lang === "zh" ? story.user_tip_zh || story.user_tip_en || "" : story.user_tip_en || "";
+}
+
+function localizedTip(item: Brief["sections"][number]["items"][number], lang: Lang) {
+  return lang === "zh" ? item.user_tip_zh || item.user_tip_en || "" : item.user_tip_en || "";
+}
+
+function localizedBackground(item: Brief["sections"][number]["items"][number], lang: Lang) {
+  if (lang === "en" && /[\u3400-\u9fff]/.test(item.background || "")) return "";
+  return item.background || "";
 }
 
 function localizedWatchlist(plan: FeedPayload["action_plan"] | undefined, lang: Lang) {

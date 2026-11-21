@@ -1338,6 +1338,24 @@ a:hover {
   line-height: 1.65;
 }
 
+.tip-bubble {
+  border-radius: 18px 4px 18px 18px;
+  background: var(--surface-sage);
+}
+
+.tip-bubble .bubble-label {
+  color: var(--olive);
+}
+
+.context-bubble {
+  border: 1px dashed var(--line-strong);
+  background: transparent;
+}
+
+.context-bubble .bubble-label {
+  color: var(--faint);
+}
+
 .signal-tags {
   display: flex;
   flex-wrap: wrap;

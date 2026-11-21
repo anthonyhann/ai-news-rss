@@ -23,6 +23,8 @@ export interface Story {
   summary_en: string;
   why_it_matters?: string;
   why_it_matters_en?: string;
+  user_tip_zh?: string;
+  user_tip_en?: string;
   background?: string;
   community?: string;
   tags?: string[];
@@ -110,6 +112,8 @@ export interface Brief {
       summary_en: string;
       why_it_matters: string;
       why_it_matters_en?: string;
+      user_tip_zh?: string;
+      user_tip_en?: string;
       background: string;
       community: string;
       tags: string[];
