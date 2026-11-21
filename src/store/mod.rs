@@ -7,8 +7,8 @@ use std::path::Path;
 use std::str::FromStr;
 
 use crate::models::{
-    Alert, Brief, BriefSummary, DeliveryReceipt, RawItem, RunStats, Score, SourceHealth,
-    SourceSpec, Story,
+    ActionPlan, Alert, Brief, BriefSummary, DeliveryReceipt, RawItem, RunStats, Score,
+    SourceHealth, SourceSpec, Story,
 };
 
 const SCHEMA: &str = include_str!("../../migrations/0001_init.sql");
@@ -425,6 +425,14 @@ impl Store {
         Ok(())
     }
 
+    pub async fn latest_action_plan(&self) -> Result<Option<ActionPlan>> {
+        let row = sqlx::query("SELECT json FROM action_plans ORDER BY date DESC LIMIT 1")
+            .fetch_optional(&self.pool)
+            .await?;
+        Ok(row
+            .and_then(|row| serde_json::from_str::<ActionPlan>(&row.get::<String, _>("json")).ok()))
+    }
+
     pub async fn was_alerted(&self, dedup_key: &str, hours: i64) -> Result<bool> {
         let since = Utc::now() - Duration::hours(hours);
         let row = sqlx::query(
@@ -517,6 +525,19 @@ impl Store {
                     path: format!("briefs/{}-{}-{}.json", brief.date, brief.slot, brief.lang),
                 })
             })
+            .collect())
+    }
+
+    pub async fn recent_briefs(&self, limit: usize) -> Result<Vec<Brief>> {
+        let rows = sqlx::query(
+            r#"SELECT json FROM briefs ORDER BY date DESC, slot DESC, lang ASC LIMIT ?1"#,
+        )
+        .bind(limit as i64)
+        .fetch_all(&self.pool)
+        .await?;
+        Ok(rows
+            .into_iter()
+            .filter_map(|row| serde_json::from_str::<Brief>(&row.get::<String, _>("json")).ok())
             .collect())
     }
 

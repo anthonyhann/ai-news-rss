@@ -8,9 +8,7 @@ use uuid::Uuid;
 use crate::config::AppConfig;
 use crate::dedup::{new_story, story_source_from_item};
 use crate::llm::{EventRelation, LlmProvider, MockLlm, OpenAiLlm};
-use crate::models::{
-    ActionPlan, FeedPayload, RawItem, RunStats, Score, SourceKind, SourceSpec, Story,
-};
+use crate::models::{FeedPayload, RawItem, RunStats, Score, SourceKind, SourceSpec, Story};
 use crate::notify;
 use crate::sources;
 use crate::store::{Store, alert_from_story};
@@ -323,7 +321,17 @@ impl Pipeline {
         let items = self.store.recent_stories(500, 0.0).await?;
         let sources = self.store.source_health(500).await?;
         let briefs = self.store.list_briefs(50).await?;
-        let action_plan = self.read_actions_public();
+        for brief in self.store.recent_briefs(briefs.len()).await? {
+            self.write_brief_public(&brief)?;
+        }
+        let action_plan = self
+            .store
+            .latest_action_plan()
+            .await?
+            .filter(|plan| plan.date == local_date());
+        if let Some(plan) = &action_plan {
+            write_json(&public_dir.join("actions.json"), plan).await?;
+        }
         let payload = FeedPayload {
             schema_version: 1,
             generated_at: Utc::now(),
@@ -357,12 +365,6 @@ impl Pipeline {
             serde_json::to_vec_pretty(plan)?,
         )?;
         Ok(())
-    }
-
-    fn read_actions_public(&self) -> Option<ActionPlan> {
-        let raw = std::fs::read_to_string(self.cfg.public_dir().join("actions.json")).ok()?;
-        let plan: ActionPlan = serde_json::from_str(&raw).ok()?;
-        (plan.date == local_date()).then_some(plan)
     }
 }
 

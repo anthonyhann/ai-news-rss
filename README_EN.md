@@ -495,6 +495,8 @@ failure; it does not block RSS/HN/Reddit/GitHub collection.
 
 - `.github/workflows/ci.yml` runs fmt, clippy, tests, web build, and worker
   syntax checks.
+- `.github/workflows/deploy.yml` restores SQLite from the `state` branch,
+  materializes every brief JSON file, and deploys Pages on pushes to `main`.
 - `.github/workflows/collect.yml` collects and scores every two hours, then
   builds and deploys the static dashboard.
 - `.github/workflows/digest.yml` generates Chinese/English briefs at 08:20 and

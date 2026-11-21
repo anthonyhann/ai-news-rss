@@ -119,13 +119,17 @@ async fn run_cli() -> Result<()> {
         }
         Commands::Export => {
             let pipeline = Pipeline::new(cfg, true).await?;
-            let run = crate::models::RunStats {
-                id: "manual-export".into(),
-                started_at: Utc::now(),
-                finished_at: Some(Utc::now()),
-                status: "success".into(),
-                ..Default::default()
-            };
+            let run = pipeline
+                .store
+                .last_run()
+                .await?
+                .unwrap_or_else(|| crate::models::RunStats {
+                    id: "manual-export".into(),
+                    started_at: Utc::now(),
+                    finished_at: Some(Utc::now()),
+                    status: "success".into(),
+                    ..Default::default()
+                });
             pipeline.export(&run).await?;
             println!("exported to {}", pipeline.cfg.public_dir().display());
         }

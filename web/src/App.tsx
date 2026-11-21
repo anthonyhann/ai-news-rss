@@ -35,6 +35,7 @@ function App() {
     }
   });
   const [selectedBrief, setSelectedBrief] = useState<Brief | null>(null);
+  const [briefError, setBriefError] = useState<string | null>(null);
   const [statusOpen, setStatusOpen] = useState(false);
   const [traceOpen, setTraceOpen] = useState(false);
 
@@ -75,7 +76,18 @@ function App() {
     }
     let canceled = false;
     loadBrief(localized.path).then((data) => {
-      if (!canceled && data) setSelectedBrief(data as Brief);
+      if (canceled) return;
+      if (data) {
+        setSelectedBrief(data as Brief);
+        setBriefError(null);
+      } else {
+        setSelectedBrief(null);
+        setBriefError(
+          lang === "zh"
+            ? "简报正文加载失败。等待下一次静态数据同步后再试。"
+            : "The brief body could not be loaded. Try again after the next static-data sync.",
+        );
+      }
     });
     return () => {
       canceled = true;
@@ -110,6 +122,11 @@ function App() {
     const data = await loadBrief(summary.path);
     if (data) {
       setSelectedBrief(data as Brief);
+      setBriefError(null);
+      navigate("briefs");
+    } else {
+      setSelectedBrief(null);
+      setBriefError(t("简报正文加载失败，请稍后重试。", "The brief body could not be loaded. Please try again."));
       navigate("briefs");
     }
   };
@@ -219,7 +236,11 @@ function App() {
                 feed={feed}
                 selected={selectedBrief}
                 onOpen={openBrief}
-                onClose={() => setSelectedBrief(null)}
+                onClose={() => {
+                  setSelectedBrief(null);
+                  setBriefError(null);
+                }}
+                error={briefError}
                 lang={lang}
                 t={t}
               />
@@ -609,10 +630,11 @@ function Briefs(props: {
   selected: Brief | null;
   onOpen: (b: BriefSummary) => void;
   onClose: () => void;
+  error: string | null;
   lang: Lang;
   t: (zh: string, en: string) => string;
 }) {
-  const { feed, selected, onOpen, onClose, lang, t } = props;
+  const { feed, selected, onOpen, onClose, error, lang, t } = props;
   const localizedBriefs = feed.briefs.filter((brief) => brief.lang === lang);
   if (selected) {
     const briefLanguage: Lang = selected.lang === "en" ? "en" : "zh";
@@ -747,6 +769,7 @@ function Briefs(props: {
   return (
     <div className="page-stack">
       <SectionHead kicker={t("简报归档", "BRIEF ARCHIVE")} title={t("每个时段，一页判断", "One page of judgment per cycle")} />
+      {error && <div className="empty-note" role="alert">{error}</div>}
       {localizedBriefs.length === 0 ? (
         <div className="empty-note">{t("还没有简报。digest 任务运行后会出现在这里。", "No briefs yet. They appear after the digest runs.")}</div>
       ) : (

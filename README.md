@@ -411,6 +411,7 @@ X 的自动化规则和风控会变化。生产环境建议使用专用小号或
 ## GitHub Actions
 
 - `.github/workflows/ci.yml`：fmt、clippy、test、前端构建、worker 语法检查。
+- `.github/workflows/deploy.yml`：代码推送到 `main` 后从 `state` 分支恢复 SQLite，重新物化全部简报 JSON 并部署 Pages。
 - `.github/workflows/collect.yml`：每 2 小时采集 + 评分，然后构建并部署静态站。
 - `.github/workflows/digest.yml`：北京时间 08:20 / 20:20 生成中英双语简报和行动建议。
 
