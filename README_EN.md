@@ -306,10 +306,18 @@ the official X API. The Easel login remains usable for local runs.
 
 ```dotenv
 FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/YOUR_HOOK
+PUBLIC_SITE_URL=https://anthonyhann.github.io/ai-news-rss
 ```
 
 `[delivery.feishu] enabled = true` is already set. For other channels, enable
 their sections and provide the matching URL, token, or SMTP values.
+
+Daily pushes use **A · Po Morning Letter**: a 60-second brief, today's lead,
+two more signals, the ToT action, and a link to the full brief. Feishu receives
+an interactive card; WeCom and DingTalk receive Markdown; Telegram receives
+HTML; email receives a responsive 600px HTML edition. `PUBLIC_SITE_URL` builds
+the “open full brief” links, can be overridden by a repository variable in
+Actions, and falls back to this project's Pages URL.
 
 Optional connectivity test:
 
@@ -333,7 +341,6 @@ gh secret set LLM_EDITOR_MODEL --repo anthonyhann/ai-news-rss
 gh secret set X_LIST_URL --repo anthonyhann/ai-news-rss
 gh secret set TWITTER_AUTH_TOKEN --repo anthonyhann/ai-news-rss
 gh secret set TWITTER_CT0 --repo anthonyhann/ai-news-rss
-gh secret set TWITTER_PROXY --repo anthonyhann/ai-news-rss
 gh secret set FEISHU_WEBHOOK_URL --repo anthonyhann/ai-news-rss
 ```
 
@@ -342,6 +349,10 @@ Verify names only:
 ```bash
 gh secret list --repo anthonyhann/ai-news-rss
 ```
+
+Keep `TWITTER_PROXY` in the local `.env` only. GitHub-hosted runners cannot
+reach a `127.0.0.1` proxy; use a self-hosted runner or a proxy address that the
+runner can reach.
 
 ### 6. Sources, thresholds and prompts
 

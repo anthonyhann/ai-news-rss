@@ -248,9 +248,12 @@ GitHub-hosted Runner 的出口 IP 与 Easel 本机不同，X 可能拒绝该会�
 
 ```dotenv
 FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/YOUR_HOOK
+PUBLIC_SITE_URL=https://anthonyhann.github.io/ai-news-rss
 ```
 
 `config/app.toml` 已设置 `[delivery.feishu] enabled = true`。启用其他渠道时，分别设置对应 `enabled = true` 并配置 `.env` 中的 URL、Token 或 SMTP 参数。
+
+简报统一采用 **A · Po 晨读信**：60 秒摘要 → 今日头条 → 再看两条 → ToT 今日行动 → 完整简报入口。飞书发送交互卡片，企业微信/钉钉发送 Markdown，Telegram 发送 HTML，邮件发送 600px 响应式 HTML。`PUBLIC_SITE_URL` 用于生成卡片与邮件里的“看完整简报”链接；Actions 中可用仓库变量覆盖，未设置时回落到本项目 Pages 地址。
 
 可选连通性测试：
 
@@ -273,7 +276,6 @@ gh secret set LLM_EDITOR_MODEL --repo anthonyhann/ai-news-rss
 gh secret set X_LIST_URL --repo anthonyhann/ai-news-rss
 gh secret set TWITTER_AUTH_TOKEN --repo anthonyhann/ai-news-rss
 gh secret set TWITTER_CT0 --repo anthonyhann/ai-news-rss
-gh secret set TWITTER_PROXY --repo anthonyhann/ai-news-rss
 gh secret set FEISHU_WEBHOOK_URL --repo anthonyhann/ai-news-rss
 ```
 
@@ -282,6 +284,8 @@ gh secret set FEISHU_WEBHOOK_URL --repo anthonyhann/ai-news-rss
 ```bash
 gh secret list --repo anthonyhann/ai-news-rss
 ```
+
+`TWITTER_PROXY` 只写入本机 `.env`。GitHub-hosted Runner 无法访问 `127.0.0.1` 代理；需要代理时请使用自托管 Runner 或指向 Runner 可访问的代理地址。
 
 ### 6. 配置信源、阈值与提示词
 

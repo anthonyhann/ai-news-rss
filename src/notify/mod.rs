@@ -11,6 +11,8 @@ use serde_json::json;
 use crate::config::DeliverySection;
 use crate::models::{Alert, Brief, DeliveryReceipt};
 
+mod templates;
+
 pub async fn send_alert(cfg: &DeliverySection, alert: &Alert) -> Vec<DeliveryReceipt> {
     let text = format!(
         "## AI 高分情报 · {score:.0} 分\n\n**{title}**\n\n{summary}\n\n{why}\n\n[原文]({url})",
@@ -24,12 +26,68 @@ pub async fn send_alert(cfg: &DeliverySection, alert: &Alert) -> Vec<DeliveryRec
 }
 
 pub async fn send_digest(cfg: &DeliverySection, brief: &Brief) -> Vec<DeliveryReceipt> {
-    send_all(
-        cfg,
-        &brief.markdown,
-        &format!("AI 情报简报 · {}", brief.date),
-    )
-    .await
+    let client = Client::builder()
+        .timeout(std::time::Duration::from_secs(30))
+        .build()
+        .unwrap_or_default();
+    let mut receipts = Vec::new();
+    let title = templates::digest_subject(brief);
+
+    if cfg.feishu.enabled {
+        receipts.push(
+            send_feishu_card(
+                &client,
+                &cfg.feishu.url_env,
+                templates::feishu_digest_card(brief),
+            )
+            .await
+            .unwrap_or_else(|e| receipt("feishu", false, format!("{e:#}"))),
+        );
+    }
+
+    if cfg.wecom.enabled {
+        receipts.push(
+            send_wecom(&client, &cfg.wecom.url_env, &templates::wecom_digest(brief))
+                .await
+                .unwrap_or_else(|e| receipt("wecom", false, format!("{e:#}"))),
+        );
+    }
+
+    if cfg.dingtalk.enabled {
+        receipts.push(
+            send_dingtalk(
+                &client,
+                &cfg.dingtalk.url_env,
+                &title,
+                &templates::wecom_digest(brief),
+            )
+            .await
+            .unwrap_or_else(|e| receipt("dingtalk", false, format!("{e:#}"))),
+        );
+    }
+
+    if cfg.telegram.enabled {
+        receipts.push(
+            send_telegram(
+                &client,
+                cfg,
+                &templates::telegram_digest(brief),
+                Some("HTML"),
+            )
+            .await
+            .unwrap_or_else(|e| receipt("telegram", false, format!("{e:#}"))),
+        );
+    }
+
+    if cfg.email.enabled {
+        receipts.push(
+            send_email_html(cfg, &title, &templates::email_digest_html(brief))
+                .await
+                .unwrap_or_else(|e| receipt("email", false, format!("{e:#}"))),
+        );
+    }
+    log_receipts(&receipts, "digest");
+    receipts
 }
 
 async fn send_all(cfg: &DeliverySection, markdown: &str, title: &str) -> Vec<DeliveryReceipt> {
@@ -62,7 +120,7 @@ async fn send_all(cfg: &DeliverySection, markdown: &str, title: &str) -> Vec<Del
         }
         if cfg.telegram.enabled {
             receipts.push(
-                send_telegram(&client, cfg, &chunk)
+                send_telegram(&client, cfg, &chunk, None)
                     .await
                     .unwrap_or_else(|e| receipt("telegram", false, format!("{e:#}"))),
             );
@@ -110,6 +168,26 @@ async fn send_feishu(client: &Client, env: &str, text: &str) -> Result<DeliveryR
     Ok(receipt("feishu", ok, value.to_string()))
 }
 
+async fn send_feishu_card(
+    client: &Client,
+    env: &str,
+    card: serde_json::Value,
+) -> Result<DeliveryReceipt> {
+    let url = env_value(env)?;
+    let resp = client
+        .post(url)
+        .json(&json!({
+            "msg_type": "interactive",
+            "card": card
+        }))
+        .send()
+        .await?
+        .error_for_status()?;
+    let value: serde_json::Value = resp.json().await.unwrap_or_default();
+    let ok = value.get("code").and_then(|v| v.as_i64()).unwrap_or(0) == 0;
+    Ok(receipt("feishu", ok, value.to_string()))
+}
+
 async fn send_dingtalk(
     client: &Client,
     env: &str,
@@ -135,16 +213,21 @@ async fn send_telegram(
     client: &Client,
     cfg: &DeliverySection,
     text: &str,
+    parse_mode: Option<&str>,
 ) -> Result<DeliveryReceipt> {
     let token = env_value(&cfg.telegram.token_env)?;
     let chat_id = env_value(&cfg.telegram.chat_id_env)?;
+    let mut payload = json!({
+        "chat_id": chat_id,
+        "text": text,
+        "disable_web_page_preview": true
+    });
+    if let Some(mode) = parse_mode {
+        payload["parse_mode"] = json!(mode);
+    }
     let resp = client
         .post(format!("https://api.telegram.org/bot{token}/sendMessage"))
-        .json(&json!({
-            "chat_id": chat_id,
-            "text": text,
-            "disable_web_page_preview": true
-        }))
+        .json(&payload)
         .send()
         .await?
         .error_for_status()?;
@@ -161,15 +244,23 @@ async fn send_email(
     subject: &str,
     markdown: &str,
 ) -> Result<DeliveryReceipt> {
+    let mut parser = Parser::new(markdown);
+    let mut body = String::new();
+    html::push_html(&mut body, &mut parser);
+    send_email_html(cfg, subject, &body).await
+}
+
+async fn send_email_html(
+    cfg: &DeliverySection,
+    subject: &str,
+    body: &str,
+) -> Result<DeliveryReceipt> {
     let password = env_value(&cfg.email.password_env)?;
     let from: Mailbox = cfg
         .email
         .from
         .parse()
         .with_context(|| format!("invalid email from {}", cfg.email.from))?;
-    let mut parser = Parser::new(markdown);
-    let mut body = String::new();
-    html::push_html(&mut body, &mut parser);
     let mut builder = Message::builder()
         .from(from)
         .subject(subject)
@@ -186,7 +277,7 @@ async fn send_email(
             .with_context(|| format!("invalid email recipient {to}"))?;
         builder = builder.to(mailbox);
     }
-    let message = builder.body(body)?;
+    let message = builder.body(body.to_string())?;
     let creds = Credentials::new(cfg.email.username.clone(), password);
     let transport = AsyncSmtpTransport::<Tokio1Executor>::relay(&cfg.email.smtp_server)?
         .port(cfg.email.smtp_port)
@@ -206,6 +297,21 @@ fn receipt(channel: &str, ok: bool, detail: String) -> DeliveryReceipt {
         ok,
         detail,
         sent_at: Utc::now(),
+    }
+}
+
+fn log_receipts(receipts: &[DeliveryReceipt], kind: &str) {
+    for item in receipts {
+        if item.ok {
+            tracing::info!(channel = %item.channel, kind, "delivery sent");
+        } else {
+            tracing::warn!(
+                channel = %item.channel,
+                kind,
+                detail = %item.detail,
+                "delivery failed"
+            );
+        }
     }
 }
 
