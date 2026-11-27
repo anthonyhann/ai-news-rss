@@ -5,7 +5,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
 use crate::config::AiSection;
-use crate::models::{ActionOption, ActionPlan, Brief, BriefSection, Score, Story, TopSignal};
+use crate::models::{
+    ActionOption, ActionPlan, Brief, BriefSection, CreatorAngle, CreatorPack, Score, Story,
+    TopSignal,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -36,6 +39,14 @@ pub trait LlmProvider: Send + Sync {
         stories: &[Story],
         action_plan: Option<&ActionPlan>,
     ) -> Result<Brief>;
+    async fn write_creator_pack(
+        &self,
+        _date: &str,
+        _brief: &Brief,
+        _stories: &[Story],
+    ) -> Result<Option<CreatorPack>> {
+        Ok(None)
+    }
     async fn plan_actions(&self, date: &str, stories: &[Story]) -> Result<ActionPlan>;
 }
 
@@ -249,6 +260,7 @@ impl LlmProvider for MockLlm {
         let top_signals = top.iter().map(|s| to_signal(s, lang)).collect();
         let markdown =
             render_markdown(date, slot, lang, &executive_summary, &sections, action_plan);
+        let creator_pack = Some(mock_creator_pack(&top));
         Ok(Brief {
             schema_version: 1,
             date: date.into(),
@@ -258,6 +270,7 @@ impl LlmProvider for MockLlm {
             sections,
             top_signals,
             action_plan: action_plan.cloned(),
+            creator_pack,
             markdown,
             model: self.model.clone(),
         })
@@ -525,6 +538,44 @@ impl LlmProvider for OpenAiLlm {
         Ok(brief)
     }
 
+    async fn write_creator_pack(
+        &self,
+        date: &str,
+        brief: &Brief,
+        stories: &[Story],
+    ) -> Result<Option<CreatorPack>> {
+        let top = stories.iter().take(3).collect::<Vec<_>>();
+        if top.is_empty() {
+            return Ok(None);
+        }
+        let input = json!({
+            "date": date,
+            "executive_summary": brief.executive_summary,
+            "stories": top.iter().map(|story| story_input(story)).collect::<Vec<_>>(),
+        });
+        let result = self
+            .complete(
+                &self.scoring_model,
+                CREATOR_SYSTEM,
+                &format!(
+                    "{CREATOR_USER}\n\nINPUT:\n{}",
+                    serde_json::to_string_pretty(&input)?
+                ),
+            )
+            .await;
+        let pack = match result {
+            Ok(text) => match Self::parse_json::<CreatorPack>(&text) {
+                Ok(pack) => pack,
+                Err(_) => mock_creator_pack(&top),
+            },
+            Err(error) => {
+                tracing::warn!(error = %error, "creator pack LLM failed; using deterministic fallback");
+                mock_creator_pack(&top)
+            }
+        };
+        Ok(Some(pack))
+    }
+
     async fn plan_actions(&self, date: &str, stories: &[Story]) -> Result<ActionPlan> {
         let input = json!({
             "date": date,
@@ -578,6 +629,61 @@ fn story_input(story: &Story) -> Value {
             "published_at": s.published_at,
         })).collect::<Vec<_>>()
     })
+}
+
+fn mock_creator_pack(top: &[&Story]) -> CreatorPack {
+    CreatorPack {
+        daily_theme_zh: "AI 工具正在从“回答问题”，走向“替你完成工作”。".into(),
+        daily_theme_en: "AI tools are moving from answering questions to completing work.".into(),
+        audience_tension_zh:
+            "读者真正想知道的是：这次更新能不能省下时间、少犯错，还是又一场发布会热闹？"
+                .into(),
+        audience_tension_en:
+            "The real question is whether this saves time and reduces mistakes, or is just another launch."
+                .into(),
+        angles: top
+            .iter()
+            .take(3)
+            .map(|story| {
+                let title_zh = story
+                    .title_zh
+                    .trim_end_matches(['。', '.', '？', '?', '！', '!']);
+                let title_en = story
+                    .title_en
+                    .trim_end_matches(['。', '.', '？', '?', '！', '!']);
+                CreatorAngle {
+                    story_id: story.id.clone(),
+                    title_zh: story.title_zh.clone(),
+                    title_en: story.title_en.clone(),
+                    hook_zh: format!("别急着换工具：{title_zh}，到底改变了哪一步？"),
+                    hook_en: format!(
+                        "Before you switch tools: what exactly changed with {title_en}?"
+                    ),
+                    angle_zh:
+                        "从普通人的一天出发：先讲一个具体使用场景，再解释这次更新真正改变了什么。"
+                            .into(),
+                    angle_en:
+                        "Start with one real moment in a normal workday, then explain what actually changed."
+                            .into(),
+                    format_zh: "30 秒短视频 + 3 张图文卡".into(),
+                    format_en: "30-second short video + 3-slide carousel".into(),
+                    evidence_zh: "官方发布和原文链接；可引用“发布时间 + 具体能力变化”。".into(),
+                    evidence_en:
+                        "Official announcement and source link; cite the release date and the concrete capability change."
+                            .into(),
+                    counterpoint_zh: "先用真实任务实测，不要把官方演示当成所有人的结果。".into(),
+                    counterpoint_en:
+                        "Test it on a real task first; do not treat the official demo as everyone's result."
+                            .into(),
+                    source_url: story
+                        .sources
+                        .first()
+                        .map(|source| source.url.clone())
+                        .unwrap_or_default(),
+                }
+            })
+            .collect(),
+    }
 }
 
 fn to_signal(story: &Story, _lang: &str) -> TopSignal {
@@ -748,6 +854,21 @@ Editing rules:
 Every claim must be grounded in the input sources. Do not invent links or numbers. If a section has no evidence, omit it."#;
 
 const BRIEF_USER: &str = "Write the requested language edition for ordinary AI users. Simplify the analysis, explain jargon, and make each item useful today. Preserve source URLs.";
+
+const CREATOR_SYSTEM: &str = r#"You are the content strategist for an AI blogger or creator.
+Return only valid JSON matching this shape:
+{"daily_theme_zh":"...","daily_theme_en":"...","audience_tension_zh":"...","audience_tension_en":"...","angles":[{"story_id":"...","title_zh":"...","title_en":"...","hook_zh":"...","hook_en":"...","angle_zh":"...","angle_en":"...","format_zh":"...","format_en":"...","evidence_zh":"...","evidence_en":"...","counterpoint_zh":"...","counterpoint_en":"...","source_url":"..."}]}
+Use the supplied stories and their source links. Produce 2-3 angles for a creator who needs to publish something useful today.
+- daily_theme: one cross-story editorial theme, not a headline list.
+- audience_tension: the question the audience is actually confused or curious about.
+- hook: a truthful opening line, not clickbait.
+- angle: a distinct point of view, not a restatement of the headline.
+- format: short video, thread, newsletter, carousel or another practical format.
+- evidence: a concrete number, quote, demo or source-backed fact. Never invent it.
+- counterpoint: what the creator must verify or the strongest opposing view.
+Prefer tension, before/after, cost changes, workflow changes, surprising demos, failures and unresolved debates. Never invent quotes, numbers or links."#;
+
+const CREATOR_USER: &str = "Create a source-grounded bilingual creator board for these stories.";
 
 const ACTION_SYSTEM: &str = r#"You are a Tree-of-Thoughts action planner for a non-technical AI user.
 Generate 3-5 candidate actions. For each, score impact, feasibility, speed and confidence from 0-10.

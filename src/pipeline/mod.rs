@@ -8,7 +8,9 @@ use uuid::Uuid;
 use crate::config::AppConfig;
 use crate::dedup::{new_story, story_source_from_item};
 use crate::llm::{EventRelation, LlmProvider, MockLlm, OpenAiLlm};
-use crate::models::{FeedPayload, RawItem, RunStats, Score, SourceKind, SourceSpec, Story};
+use crate::models::{
+    CreatorPack, FeedPayload, RawItem, RunStats, Score, SourceKind, SourceSpec, Story,
+};
 use crate::notify;
 use crate::sources;
 use crate::store::{Store, alert_from_story};
@@ -255,11 +257,23 @@ impl Pipeline {
             self.write_actions_public(&action_plan)?;
             let mut brief_count = 0usize;
             let mut briefs = Vec::new();
+            let mut creator_pack: Option<CreatorPack> = None;
+            let mut creator_pack_loaded = false;
             for lang in &self.cfg.pipeline.languages {
-                let brief = self
+                let mut brief = self
                     .llm
                     .write_brief(&date, slot, lang, &top, Some(&action_plan))
                     .await?;
+                if brief.creator_pack.is_none() {
+                    if !creator_pack_loaded {
+                        creator_pack = self.llm.write_creator_pack(&date, &brief, &top).await?;
+                        creator_pack_loaded = true;
+                    }
+                    brief.creator_pack = creator_pack.clone();
+                } else if !creator_pack_loaded {
+                    creator_pack = brief.creator_pack.clone();
+                    creator_pack_loaded = true;
+                }
                 self.store.save_brief(&brief).await?;
                 self.write_brief_public(&brief)?;
                 briefs.push(brief);
@@ -297,11 +311,23 @@ impl Pipeline {
             ..RunStats::default()
         };
         let mut briefs = Vec::new();
+        let mut creator_pack: Option<CreatorPack> = None;
+        let mut creator_pack_loaded = false;
         for lang in &self.cfg.pipeline.languages {
-            let brief = self
+            let mut brief = self
                 .llm
                 .write_brief(&date, slot, lang, &top, Some(&action_plan))
                 .await?;
+            if brief.creator_pack.is_none() {
+                if !creator_pack_loaded {
+                    creator_pack = self.llm.write_creator_pack(&date, &brief, &top).await?;
+                    creator_pack_loaded = true;
+                }
+                brief.creator_pack = creator_pack.clone();
+            } else if !creator_pack_loaded {
+                creator_pack = brief.creator_pack.clone();
+                creator_pack_loaded = true;
+            }
             self.store.save_brief(&brief).await?;
             self.write_brief_public(&brief)?;
             briefs.push(brief);

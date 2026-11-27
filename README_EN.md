@@ -74,7 +74,7 @@ GitHub, Telegram, WeChat RSS bridges, and newsletters. Most aggregators stop at
 | Sources | RSS/Atom, Hacker News, Reddit, GitHub Releases, OSS Insight, Telegram, YouTube, arXiv, WeChat RSS bridges, X Lists |
 | Deduplication | canonical URLs, SHA-256 content hashes, SimHash buckets, title Jaccard, model event merge |
 | Scoring | 0–100 editorial rubric with hard caps for non-AI, rumors, missing links, and stale content |
-| Briefs | Plain-language Chinese and English editions: what happened, what it means for you, what you can try today; context and citations included |
+| Briefs | Plain-language Chinese and English editions plus a creator board: each idea includes a hook, distinct angle, format, evidence and counterpoint |
 | Action plan | Tree-of-Thoughts generates 3–5 candidates ranked by impact, feasibility, speed and confidence; score summaries are visible in the brief |
 | Alerts | score ≥ 90, confidence ≥ 0.80, 24-hour story deduplication, optional material follow-ups |
 | Delivery | WeCom, Feishu, DingTalk, Telegram, email, web publication |

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { loadBrief, loadFeed } from "./data";
 import PoAvatar from "./PoAvatar";
-import type { Brief, BriefSummary, FeedPayload, Lang, Story } from "./types";
+import type { Brief, BriefSummary, CreatorPack, FeedPayload, Lang, Story } from "./types";
 
 type View = "today" | "briefs" | "sources" | "alerts" | "archive" | "about";
 
@@ -668,6 +668,9 @@ function Briefs(props: {
               <p key={`${line}-${index}`}><span>{String(index + 1).padStart(2, "0")}</span>{localizedBriefCopy(line, briefLanguage)}</p>
             ))}
           </div>
+          {selected.creator_pack && selected.creator_pack.angles?.length > 0 && (
+            <CreatorBoard pack={selected.creator_pack} lang={briefLanguage} t={t} />
+          )}
           {selected.sections.map((section) => (
             <section className="brief-section" key={section.title_en}>
               <h3>{briefLanguage === "zh" ? section.title_zh : section.title_en}</h3>
@@ -803,6 +806,72 @@ function Briefs(props: {
         </div>
       )}
     </div>
+  );
+}
+
+function CreatorBoard({ pack, lang, t }: { pack: CreatorPack; lang: Lang; t: (zh: string, en: string) => string }) {
+  return (
+    <section className="creator-board">
+      <div className="creator-board-head">
+        <span className="eyebrow">{t("今日创作板", "TODAY'S CREATOR BOARD")}</span>
+        <h3>{localizedText(pack.daily_theme_zh, pack.daily_theme_en, lang)}</h3>
+        <p>{localizedText(pack.audience_tension_zh, pack.audience_tension_en, lang)}</p>
+      </div>
+      <div className="creator-angle-grid">
+        {pack.angles.slice(0, 3).map((angle, index) => {
+          const title = localizedText(angle.title_zh, angle.title_en, lang);
+          const hook = localizedText(angle.hook_zh, angle.hook_en, lang);
+          const insight = localizedText(angle.angle_zh, angle.angle_en, lang);
+          const format = localizedText(angle.format_zh, angle.format_en, lang);
+          const evidence = localizedText(angle.evidence_zh, angle.evidence_en, lang);
+          const counterpoint = localizedText(angle.counterpoint_zh, angle.counterpoint_en, lang);
+          const copyText = [
+            title,
+            `${t("开头钩子", "Hook")}: ${hook}`,
+            `${t("你的角度", "Angle")}: ${insight}`,
+            `${t("适合形式", "Format")}: ${format}`,
+            `${t("可引用素材", "Evidence")}: ${evidence}`,
+            `${t("先别写死", "Verify first")}: ${counterpoint}`,
+            angle.source_url,
+          ].join("\n");
+          return (
+            <article className="creator-angle" key={`${angle.story_id}-${index}`}>
+              <div className="creator-angle-top">
+                <span className="creator-index">{String(index + 1).padStart(2, "0")}</span>
+                <span className="creator-format">{format}</span>
+              </div>
+              <h4>{title}</h4>
+              <div className="creator-field">
+                <span>{t("开头钩子", "HOOK")}</span>
+                <p>{hook}</p>
+              </div>
+              <div className="creator-field">
+                <span>{t("你的角度", "YOUR ANGLE")}</span>
+                <p>{insight}</p>
+              </div>
+              <div className="creator-field">
+                <span>{t("可引用素材", "EVIDENCE")}</span>
+                <p>{evidence}</p>
+              </div>
+              <div className="creator-field creator-counter">
+                <span>{t("先别写死", "VERIFY FIRST")}</span>
+                <p>{counterpoint}</p>
+              </div>
+              <div className="creator-actions">
+                <button className="text-button" onClick={() => navigator.clipboard?.writeText(copyText)}>
+                  {t("复制选题", "Copy idea")} ↗
+                </button>
+                {angle.source_url && (
+                  <a href={angle.source_url} target="_blank" rel="noreferrer">
+                    {t("看原始素材", "Open source")} ↗
+                  </a>
+                )}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 

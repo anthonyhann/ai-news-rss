@@ -70,6 +70,31 @@ export interface ActionPlan {
   model?: string;
 }
 
+export interface CreatorAngle {
+  story_id: string;
+  title_zh: string;
+  title_en: string;
+  hook_zh: string;
+  hook_en: string;
+  angle_zh: string;
+  angle_en: string;
+  format_zh: string;
+  format_en: string;
+  evidence_zh: string;
+  evidence_en: string;
+  counterpoint_zh: string;
+  counterpoint_en: string;
+  source_url: string;
+}
+
+export interface CreatorPack {
+  daily_theme_zh: string;
+  daily_theme_en: string;
+  audience_tension_zh: string;
+  audience_tension_en: string;
+  angles: CreatorAngle[];
+}
+
 export interface SourceHealth {
   source_id: string;
   name: string;
@@ -124,6 +149,7 @@ export interface Brief {
   }>;
   top_signals: Brief["sections"][number]["items"];
   action_plan?: ActionPlan;
+  creator_pack?: CreatorPack;
   markdown: string;
   model: string;
 }

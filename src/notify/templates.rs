@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use serde_json::{Value, json};
 
-use crate::models::{ActionOption, Brief, TopSignal};
+use crate::models::{ActionOption, Brief, CreatorAngle, TopSignal};
 
 pub fn digest_subject(brief: &Brief) -> String {
     format!("Po Radar · {} · {}", slot_label(brief), brief.date)
@@ -31,6 +31,41 @@ pub fn feishu_digest_card(brief: &Brief) -> Value {
             "content": format!("**{}**\n{}", section_label(brief, "60 秒版", "60-SECOND BRIEF"), summary)
         }),
     ];
+
+    if let Some(pack) = &brief.creator_pack {
+        let angles = pack
+            .angles
+            .iter()
+            .take(2)
+            .enumerate()
+            .map(|(index, angle)| {
+                format!(
+                    "{}. [{}]({})\n   - {}: {}\n   - {}: {}\n   - {}: {}",
+                    index + 1,
+                    creator_title(angle, brief),
+                    angle.source_url,
+                    section_label(brief, "开头钩子", "HOOK"),
+                    creator_hook(angle, brief),
+                    section_label(brief, "你的角度", "ANGLE"),
+                    creator_angle(angle, brief),
+                    section_label(brief, "适合形式", "FORMAT"),
+                    creator_format(angle, brief)
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n\n");
+        if !angles.is_empty() {
+            elements.push(json!({"tag": "hr"}));
+            elements.push(json!({
+                "tag": "markdown",
+                "content": format!(
+                    "**{}**\n{}",
+                    section_label(brief, "今日可以写", "WHAT TO WRITE TODAY"),
+                    angles
+                )
+            }));
+        }
+    }
 
     if let Some(item) = lead {
         elements.push(json!({"tag": "hr"}));
@@ -162,6 +197,32 @@ pub fn wecom_digest(brief: &Brief) -> String {
         section_label(brief, "60 秒版", "60-SECOND BRIEF"),
         summary
     ));
+    if let Some(pack) = &brief.creator_pack {
+        let angles = pack
+            .angles
+            .iter()
+            .take(2)
+            .map(|angle| {
+                format!(
+                    "[{}]({})\n{}：{} · {}：{}",
+                    creator_title(angle, brief),
+                    angle.source_url,
+                    section_label(brief, "开头", "Hook"),
+                    creator_hook(angle, brief),
+                    section_label(brief, "形式", "Format"),
+                    creator_format(angle, brief)
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n\n");
+        if !angles.is_empty() {
+            out.push_str(&format!(
+                "**{}**\n{}\n\n",
+                section_label(brief, "今日可以写", "WHAT TO WRITE TODAY"),
+                angles
+            ));
+        }
+    }
 
     if let Some(item) = signals.first() {
         out.push_str(&format!(
@@ -244,6 +305,32 @@ pub fn telegram_digest(brief: &Brief) -> String {
         section_label(brief, "60 秒版", "60-SECOND BRIEF"),
         summary
     ));
+    if let Some(pack) = &brief.creator_pack {
+        let angles = pack
+            .angles
+            .iter()
+            .take(2)
+            .map(|angle| {
+                format!(
+                    "<a href=\"{}\">{}</a>\n{}: {} · {}: {}",
+                    escape_html(&angle.source_url),
+                    escape_html(creator_title(angle, brief)),
+                    section_label(brief, "开头", "Hook"),
+                    escape_html(creator_hook(angle, brief)),
+                    section_label(brief, "形式", "Format"),
+                    escape_html(creator_format(angle, brief))
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n\n");
+        if !angles.is_empty() {
+            out.push_str(&format!(
+                "<b>{}</b>\n{}\n\n",
+                section_label(brief, "今日可以写", "WHAT TO WRITE TODAY"),
+                angles
+            ));
+        }
+    }
 
     if let Some(item) = signals.first() {
         out.push_str(&format!(
@@ -486,6 +573,45 @@ pub fn email_digest_html(primary: &Brief, secondary: Option<&Brief>) -> String {
             )
         })
         .unwrap_or_default();
+    let creator_html = primary
+        .creator_pack
+        .as_ref()
+        .map(|pack| {
+            let angles = pack
+                .angles
+                .iter()
+                .take(2)
+                .map(|angle| {
+                    format!(
+                        "<div style=\"padding:13px 0;border-top:1px solid #e8ded0;\">
+                           <div style=\"font-size:9px;font-weight:800;letter-spacing:.1em;color:#9f432d;text-transform:uppercase;\">{} · {}</div>
+                           <h3 style=\"margin:5px 0 6px;font-size:15px;line-height:1.4;color:#332d27;\"><a href=\"{}\" style=\"color:#332d27;text-decoration:none;\">{}</a></h3>
+                           <p style=\"margin:0;color:#675a4e;font-size:11px;line-height:1.6;\"><b>开头：</b>{}</p>
+                           <p style=\"margin:5px 0 0;color:#675a4e;font-size:11px;line-height:1.6;\"><b>角度：</b>{}</p>
+                         </div>",
+                        section_label(primary, "选题", "Angle"),
+                        escape_html(creator_format(angle, primary)),
+                        escape_html(&angle.source_url),
+                        escape_html(creator_title(angle, primary)),
+                        escape_html(creator_hook(angle, primary)),
+                        escape_html(creator_angle(angle, primary))
+                    )
+                })
+                .collect::<Vec<_>>()
+                .join("");
+            format!(
+                "<div style=\"margin:24px 0;padding:18px 20px;border-radius:18px;background:#fff4e3;\">
+                   <div style=\"font-size:10px;font-weight:800;letter-spacing:.1em;color:#9f432d;text-transform:uppercase;\">今日创作板 · CREATOR BOARD</div>
+                   <h2 style=\"margin:7px 0 5px;font-size:19px;line-height:1.3;color:#332d27;\">{}</h2>
+                   <p style=\"margin:0;color:#786c5f;font-size:11px;line-height:1.6;\">{}</p>
+                   {}
+                 </div>",
+                escape_html(&pack.daily_theme_zh),
+                escape_html(&pack.audience_tension_zh),
+                angles
+            )
+        })
+        .unwrap_or_default();
     let heading = match primary.slot.as_str() {
         "evening" => "晚上好，<br>今天再看三件事。",
         _ => "早上好，<br>今天先看这三件事。",
@@ -512,7 +638,7 @@ pub fn email_digest_html(primary: &Brief, secondary: Option<&Brief>) -> String {
                 <div style=\"margin:14px 0 7px;padding-top:11px;border-top:1px solid #e8ded0;font-size:10px;font-weight:800;letter-spacing:.1em;color:#a09383;\">ENGLISH</div>
                 {}
               </div>
-              {}{}{}{}{}
+              {}{}{}{}{}{}
               <p style=\"margin:22px 0 0;color:#a09383;font-size:10px;line-height:1.6;\">Po Radar · 117 个信源 · {}</p>
             </td></tr></table>
           </td></tr></table>
@@ -524,6 +650,7 @@ pub fn email_digest_html(primary: &Brief, secondary: Option<&Brief>) -> String {
         heading_en,
         summary_zh,
         summary_en,
+        creator_html,
         lead_html,
         quick_html,
         action_html,
@@ -732,6 +859,62 @@ fn user_tip<'a>(item: &'a TopSignal, brief: &Brief) -> &'a str {
     }
 }
 
+fn creator_title<'a>(angle: &'a CreatorAngle, brief: &Brief) -> &'a str {
+    if is_zh(brief) {
+        if angle.title_zh.is_empty() {
+            &angle.title_en
+        } else {
+            &angle.title_zh
+        }
+    } else if angle.title_en.is_empty() {
+        &angle.title_zh
+    } else {
+        &angle.title_en
+    }
+}
+
+fn creator_hook<'a>(angle: &'a CreatorAngle, brief: &Brief) -> &'a str {
+    if is_zh(brief) {
+        if angle.hook_zh.is_empty() {
+            &angle.hook_en
+        } else {
+            &angle.hook_zh
+        }
+    } else if angle.hook_en.is_empty() {
+        &angle.hook_zh
+    } else {
+        &angle.hook_en
+    }
+}
+
+fn creator_angle<'a>(angle: &'a CreatorAngle, brief: &Brief) -> &'a str {
+    if is_zh(brief) {
+        if angle.angle_zh.is_empty() {
+            &angle.angle_en
+        } else {
+            &angle.angle_zh
+        }
+    } else if angle.angle_en.is_empty() {
+        &angle.angle_zh
+    } else {
+        &angle.angle_en
+    }
+}
+
+fn creator_format<'a>(angle: &'a CreatorAngle, brief: &Brief) -> &'a str {
+    if is_zh(brief) {
+        if angle.format_zh.is_empty() {
+            &angle.format_en
+        } else {
+            &angle.format_zh
+        }
+    } else if angle.format_en.is_empty() {
+        &angle.format_zh
+    } else {
+        &angle.format_en
+    }
+}
+
 fn is_zh(brief: &Brief) -> bool {
     brief.lang.starts_with("zh")
 }
@@ -854,7 +1037,9 @@ fn escape_html(value: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::{ActionOption, ActionPlan, BriefSection, TopSignal};
+    use crate::models::{
+        ActionOption, ActionPlan, BriefSection, CreatorAngle, CreatorPack, TopSignal,
+    };
 
     fn sample_brief() -> Brief {
         let signal = TopSignal {
@@ -920,6 +1105,28 @@ mod tests {
                 summary_en: String::new(),
                 model: "test".into(),
             }),
+            creator_pack: Some(CreatorPack {
+                daily_theme_zh: "AI 工具正在从回答问题走向替你完成工作。".into(),
+                daily_theme_en: "AI tools are moving from answering to doing the work.".into(),
+                audience_tension_zh: "读者想知道这次更新到底能不能省时间。".into(),
+                audience_tension_en: "Readers want to know whether this saves real time.".into(),
+                angles: vec![CreatorAngle {
+                    story_id: "s1".into(),
+                    title_zh: "OpenAI 发布新的多模态推理模型".into(),
+                    title_en: "OpenAI introduces a new multimodal reasoning model".into(),
+                    hook_zh: "别急着换工具：先看它到底改变了哪一步。".into(),
+                    hook_en: "Before switching tools, see what actually changed.".into(),
+                    angle_zh: "从普通人一天的文档工作出发，而不是从参数出发。".into(),
+                    angle_en: "Start with one real document task, not the model specs.".into(),
+                    format_zh: "30 秒短视频 + 3 张图文卡".into(),
+                    format_en: "30-second short video + 3-slide carousel".into(),
+                    evidence_zh: "官方发布和原文链接。".into(),
+                    evidence_en: "Official announcement and source link.".into(),
+                    counterpoint_zh: "先用真实任务验证，不要只看演示。".into(),
+                    counterpoint_en: "Test a real task before trusting the demo.".into(),
+                    source_url: "https://example.com/openai".into(),
+                }],
+            }),
             ..Default::default()
         }
     }
@@ -934,6 +1141,7 @@ mod tests {
         assert!(rendered.contains("看完整简报"));
         assert!(rendered.contains("这跟你有什么关系"));
         assert!(rendered.contains("今天可以怎么用"));
+        assert!(rendered.contains("今日可以写"));
         assert!(!rendered.contains("\"tag\":\"action\""));
         assert!(rendered.contains("\"type\":\"open_url\""));
         assert!(rendered.contains("\"pc_url\""));
@@ -948,6 +1156,7 @@ mod tests {
         assert!(email.contains("OpenAI 发布新的多模态推理模型"));
         assert!(email.contains("OpenAI introduces a new multimodal reasoning model"));
         assert!(email.contains("拿一张工作截图"));
+        assert!(email.contains("CREATOR BOARD"));
         assert!(email.contains(&public_brief_url().unwrap()));
     }
 
@@ -969,6 +1178,7 @@ mod tests {
         assert!(card.contains("pts"));
         assert!(card.contains("Model capabilities and tool use are converging."));
         assert!(card.contains("TRY IT TODAY"));
+        assert!(card.contains("WHAT TO WRITE TODAY"));
         assert!(!card.contains("模型能力与工具调用正在合并。"));
         assert!(wecom_digest(&brief).contains("Good evening."));
         let mut zh = sample_brief();

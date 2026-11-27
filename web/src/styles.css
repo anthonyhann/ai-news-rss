@@ -1629,6 +1629,118 @@ a:hover {
   font-size: 9px;
 }
 
+.creator-board {
+  margin: 4px 0 28px;
+  padding: 22px;
+  border: 1px solid color-mix(in srgb, var(--terracotta) 22%, var(--line));
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(241, 154, 75, 0.16), transparent 42%),
+    var(--surface-warm);
+}
+
+.creator-board-head h3 {
+  max-width: 760px;
+  margin: 7px 0 6px;
+  color: var(--ink);
+  font-size: clamp(18px, 2.4vw, 26px);
+  font-weight: 620;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+}
+
+.creator-board-head p {
+  max-width: 720px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.creator-angle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.creator-angle {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  gap: 11px;
+  padding: 17px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  box-shadow: var(--shadow-soft);
+}
+
+.creator-angle-top,
+.creator-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.creator-index {
+  color: var(--terracotta);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.creator-format {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--surface-sage);
+  color: var(--olive);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.creator-angle h4 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.creator-field span {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--faint);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.creator-field p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.creator-counter {
+  padding-left: 10px;
+  border-left: 2px solid color-mix(in srgb, var(--terracotta) 55%, transparent);
+}
+
+.creator-actions {
+  justify-content: flex-start;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.creator-actions a {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 650;
+}
+
 .brief-section {
   padding: 22px 0 7px;
   border-top: 1px solid var(--line);

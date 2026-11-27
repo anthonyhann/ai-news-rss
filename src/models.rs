@@ -372,6 +372,52 @@ pub struct ActionPlan {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct CreatorAngle {
+    #[serde(default)]
+    pub story_id: String,
+    #[serde(default)]
+    pub title_zh: String,
+    #[serde(default)]
+    pub title_en: String,
+    #[serde(default)]
+    pub hook_zh: String,
+    #[serde(default)]
+    pub hook_en: String,
+    #[serde(default)]
+    pub angle_zh: String,
+    #[serde(default)]
+    pub angle_en: String,
+    #[serde(default)]
+    pub format_zh: String,
+    #[serde(default)]
+    pub format_en: String,
+    #[serde(default)]
+    pub evidence_zh: String,
+    #[serde(default)]
+    pub evidence_en: String,
+    #[serde(default)]
+    pub counterpoint_zh: String,
+    #[serde(default)]
+    pub counterpoint_en: String,
+    #[serde(default)]
+    pub source_url: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct CreatorPack {
+    #[serde(default)]
+    pub daily_theme_zh: String,
+    #[serde(default)]
+    pub daily_theme_en: String,
+    #[serde(default)]
+    pub audience_tension_zh: String,
+    #[serde(default)]
+    pub audience_tension_en: String,
+    #[serde(default)]
+    pub angles: Vec<CreatorAngle>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Brief {
     pub schema_version: u32,
     pub date: String,
@@ -383,6 +429,8 @@ pub struct Brief {
     pub top_signals: Vec<TopSignal>,
     #[serde(default)]
     pub action_plan: Option<ActionPlan>,
+    #[serde(default)]
+    pub creator_pack: Option<CreatorPack>,
     #[serde(default)]
     pub markdown: String,
     #[serde(default)]
