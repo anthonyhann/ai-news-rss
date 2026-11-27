@@ -644,6 +644,7 @@ function Briefs(props: {
   const localizedBriefs = feed.briefs.filter((brief) => brief.lang === lang);
   if (selected) {
     const briefLanguage: Lang = selected.lang === "en" ? "en" : "zh";
+    const creatorPack = selected.creator_pack ?? fallbackCreatorPack(selected);
     const showActionPlan =
       !!selected.action_plan &&
       (briefLanguage === "zh" ||
@@ -668,8 +669,8 @@ function Briefs(props: {
               <p key={`${line}-${index}`}><span>{String(index + 1).padStart(2, "0")}</span>{localizedBriefCopy(line, briefLanguage)}</p>
             ))}
           </div>
-          {selected.creator_pack && selected.creator_pack.angles?.length > 0 && (
-            <CreatorBoard pack={selected.creator_pack} lang={briefLanguage} t={t} />
+          {creatorPack.angles.length > 0 && (
+            <CreatorBoard pack={creatorPack} lang={briefLanguage} t={t} />
           )}
           {selected.sections.map((section) => (
             <section className="brief-section" key={section.title_en}>
@@ -873,6 +874,40 @@ function CreatorBoard({ pack, lang, t }: { pack: CreatorPack; lang: Lang; t: (zh
       </div>
     </section>
   );
+}
+
+function fallbackCreatorPack(brief: Brief): CreatorPack {
+  const seen = new Set<string>();
+  const signals = [...brief.top_signals, ...brief.sections.flatMap((section) => section.items)]
+    .filter((item) => {
+      if (seen.has(item.story_id)) return false;
+      seen.add(item.story_id);
+      return true;
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
+  return {
+    daily_theme_zh: "今天值得写的不是新闻本身，而是它会不会改变普通人的 AI 工作流。",
+    daily_theme_en: "The story worth telling is not the launch itself, but whether it changes a normal AI workflow.",
+    audience_tension_zh: "读者想知道：这次更新到底能省时间、少犯错，还是只是发布会的热闹？",
+    audience_tension_en: "Readers want to know whether this saves time and mistakes, or is just launch-day noise.",
+    angles: signals.map((item) => ({
+      story_id: item.story_id,
+      title_zh: item.title_zh,
+      title_en: item.title_en,
+      hook_zh: `别急着换工具：${item.title_zh}，到底改变了哪一步？`,
+      hook_en: `Before switching tools: what exactly changed with ${item.title_en}?`,
+      angle_zh: "从普通人的一个真实任务出发，先讲发生了什么，再讲这次变化到底替你省了哪一步。",
+      angle_en: "Start with one real task, explain what happened, then show which step it removes from a normal workflow.",
+      format_zh: "30 秒口播 + 3 张图文卡",
+      format_en: "30-second video + 3-slide carousel",
+      evidence_zh: "优先引用原文里的发布时间、价格或具体能力变化，不要只引用二手转述。",
+      evidence_en: "Cite the release date, price or concrete capability change from the original source, not a second-hand summary.",
+      counterpoint_zh: "先用一个真实任务验证，不要把官方演示当成所有人的结果。",
+      counterpoint_en: "Test one real task first; do not treat the official demo as everyone's result.",
+      source_url: item.url,
+    })),
+  };
 }
 
 function Sources({ sources, lang, t }: { sources: FeedPayload["sources"]; lang: Lang; t: (zh: string, en: string) => string }) {
