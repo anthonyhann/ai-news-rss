@@ -250,8 +250,10 @@ cargo run -- doctor | jq '.llm'
 collection still runs with `mock-editor`; do not treat those briefs as
 production output.
 
-Tune `max_items_per_run`, `max_editor_items`, `max_tokens_per_run`, and
-`temperature` in `[ai]` after the first successful run.
+Tune `max_items_per_run`, `max_editor_items`, `max_tokens_per_run`,
+`request_timeout_seconds`, `request_attempts`, and `temperature` in `[ai]`
+after the first successful run. If a brief generation times out, the digest
+falls back to a deterministic template and still publishes.
 
 ### 3. X collection
 

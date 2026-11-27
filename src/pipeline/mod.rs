@@ -252,7 +252,7 @@ impl Pipeline {
                 .store
                 .recent_stories(40, self.cfg.pipeline.digest_score)
                 .await?;
-            let action_plan = self.llm.plan_actions(&date, &top).await?;
+            let action_plan = self.plan_actions_or_fallback(&date, &top).await?;
             self.store.save_action_plan(&date, &action_plan).await?;
             self.write_actions_public(&action_plan)?;
             let mut brief_count = 0usize;
@@ -261,8 +261,7 @@ impl Pipeline {
             let mut creator_pack_loaded = false;
             for lang in &self.cfg.pipeline.languages {
                 let mut brief = self
-                    .llm
-                    .write_brief(&date, slot, lang, &top, Some(&action_plan))
+                    .write_brief_or_fallback(&date, slot, lang, &top, Some(&action_plan))
                     .await?;
                 if brief.creator_pack.is_none() {
                     if !creator_pack_loaded {
@@ -298,7 +297,7 @@ impl Pipeline {
             .store
             .recent_stories(40, self.cfg.pipeline.digest_score)
             .await?;
-        let action_plan = self.llm.plan_actions(&date, &top).await?;
+        let action_plan = self.plan_actions_or_fallback(&date, &top).await?;
         self.store.save_action_plan(&date, &action_plan).await?;
         self.write_actions_public(&action_plan)?;
         let mut run = RunStats {
@@ -315,8 +314,7 @@ impl Pipeline {
         let mut creator_pack_loaded = false;
         for lang in &self.cfg.pipeline.languages {
             let mut brief = self
-                .llm
-                .write_brief(&date, slot, lang, &top, Some(&action_plan))
+                .write_brief_or_fallback(&date, slot, lang, &top, Some(&action_plan))
                 .await?;
             if brief.creator_pack.is_none() {
                 if !creator_pack_loaded {
@@ -339,6 +337,43 @@ impl Pipeline {
         self.store.save_run(&run).await?;
         self.export(&run).await?;
         Ok(run)
+    }
+
+    async fn plan_actions_or_fallback(
+        &self,
+        date: &str,
+        top: &[Story],
+    ) -> Result<crate::models::ActionPlan> {
+        match self.llm.plan_actions(date, top).await {
+            Ok(plan) => Ok(plan),
+            Err(error) => {
+                tracing::warn!(%error, "action planner failed; using deterministic fallback");
+                MockLlm::new().plan_actions(date, top).await
+            }
+        }
+    }
+
+    async fn write_brief_or_fallback(
+        &self,
+        date: &str,
+        slot: &str,
+        lang: &str,
+        stories: &[Story],
+        action_plan: Option<&crate::models::ActionPlan>,
+    ) -> Result<crate::models::Brief> {
+        match self
+            .llm
+            .write_brief(date, slot, lang, stories, action_plan)
+            .await
+        {
+            Ok(brief) => Ok(brief),
+            Err(error) => {
+                tracing::warn!(%error, lang, "brief writer failed; using deterministic fallback");
+                MockLlm::new()
+                    .write_brief(date, slot, lang, stories, action_plan)
+                    .await
+            }
+        }
     }
 
     pub async fn export(&self, run: &RunStats) -> Result<()> {

@@ -207,6 +207,8 @@ cargo run -- doctor | jq '.llm'
 
 可在 `config/app.toml` 的 `[ai]` 调整成本：`max_items_per_run`、`max_editor_items`、`max_tokens_per_run` 和 `temperature`。建议先用默认值跑通，再根据 token 账单收紧。
 
+`request_timeout_seconds` 和 `request_attempts` 控制模型请求的耐心程度。日报生成失败时会自动降级为确定性模板并继续写出静态数据，避免单个模型超时导致整天断更。
+
 ### 3. 配置 X 采集
 
 1. 在 X 的 **Lists** 中新建或打开目标 AI Builder 列表，把需要追踪的账号加入列表。

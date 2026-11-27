@@ -15,6 +15,8 @@ temperature = 0.2
 max_items_per_run = 300
 max_editor_items = 30
 max_tokens_per_run = 350000
+request_timeout_seconds = 300
+request_attempts = 1
 prompt_version = "v1"
 
 [pipeline]

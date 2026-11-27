@@ -358,6 +358,7 @@ pub struct OpenAiLlm {
     scoring_model: String,
     editor_model: String,
     temperature: f64,
+    request_attempts: u32,
     prompt_version: String,
 }
 
@@ -367,7 +368,9 @@ impl OpenAiLlm {
             .with_context(|| format!("missing API key env {}", cfg.api_key_env))?;
         Ok(Self {
             client: Client::builder()
-                .timeout(std::time::Duration::from_secs(120))
+                .timeout(std::time::Duration::from_secs(
+                    cfg.request_timeout_seconds.max(30),
+                ))
                 .build()?,
             base_url: cfg.base_url.trim_end_matches('/').to_string(),
             api_key,
@@ -378,6 +381,7 @@ impl OpenAiLlm {
                 cfg.editor_model.clone()
             },
             temperature: cfg.temperature,
+            request_attempts: cfg.request_attempts.max(1),
             prompt_version: cfg.prompt_version.clone(),
         })
     }
@@ -393,7 +397,7 @@ impl OpenAiLlm {
             ]
         });
         let mut last_error = None;
-        for attempt in 0..3u32 {
+        for attempt in 0..self.request_attempts {
             match self
                 .client
                 .post(&url)
@@ -411,7 +415,10 @@ impl OpenAiLlm {
                         .map(str::to_string)
                         .context("LLM response missing choices[0].message.content");
                 }
-                Err(error) if (error.is_timeout() || error.is_connect()) && attempt < 2 => {
+                Err(error)
+                    if (error.is_timeout() || error.is_connect())
+                        && attempt + 1 < self.request_attempts =>
+                {
                     tracing::warn!(attempt = attempt + 1, %error, "LLM transport error; retrying");
                     tokio::time::sleep(std::time::Duration::from_secs(1 << attempt)).await;
                     last_error = Some(error);

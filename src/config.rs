@@ -51,6 +51,8 @@ pub struct AiSection {
     pub max_items_per_run: usize,
     pub max_editor_items: usize,
     pub max_tokens_per_run: u64,
+    pub request_timeout_seconds: u64,
+    pub request_attempts: u32,
     pub prompt_version: String,
 }
 
@@ -65,6 +67,8 @@ impl Default for AiSection {
             max_items_per_run: 300,
             max_editor_items: 30,
             max_tokens_per_run: 350_000,
+            request_timeout_seconds: 300,
+            request_attempts: 1,
             prompt_version: "v1".into(),
         }
     }
