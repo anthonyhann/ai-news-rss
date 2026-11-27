@@ -638,6 +638,223 @@ fn story_input(story: &Story) -> Value {
     })
 }
 
+struct FallbackCreatorProfile {
+    hook_zh: String,
+    hook_en: String,
+    angle_zh: String,
+    angle_en: String,
+    format_zh: String,
+    format_en: String,
+    evidence_zh: String,
+    evidence_en: String,
+    counterpoint_zh: String,
+    counterpoint_en: String,
+}
+
+fn fallback_creator_profile(story: &Story) -> FallbackCreatorProfile {
+    let title_zh = story
+        .title_zh
+        .trim_end_matches(['。', '.', '？', '?', '！', '!']);
+    let title_en = story
+        .title_en
+        .trim_end_matches(['。', '.', '？', '?', '！', '!']);
+    let haystack = format!(
+        "{} {} {} {} {}",
+        story.title_zh,
+        story.title_en,
+        story.summary_zh,
+        story.summary_en,
+        story
+            .sources
+            .first()
+            .map(|source| source.excerpt.as_str())
+            .unwrap_or_default()
+    )
+    .to_ascii_lowercase();
+
+    if contains_any(
+        &haystack,
+        &["voice", "clone", "polly", "audio", "语音", "声音", "克隆"],
+    ) {
+        return FallbackCreatorProfile {
+            hook_zh: format!("声音也能被复制了：{title_zh}，品牌和创作者先该检查什么？"),
+            hook_en: format!(
+                "Voices can now be cloned: what should brands and creators check first with {title_en}?"
+            ),
+            angle_zh: "用同一段脚本做三方对比：真人录音、普通 TTS、声音克隆。重点讲授权、辨识度和品牌风险，而不是只展示“像不像”。".into(),
+            angle_en: "Compare the same script across a real recording, standard TTS and a cloned voice. Focus on consent, recognisability and brand risk, not just whether it sounds similar.".into(),
+            format_zh: "60 秒三方对比 + 授权检查清单".into(),
+            format_en: "60-second comparison + consent checklist".into(),
+            evidence_zh: "引用原文的发布范围、授权条款和可用地区；如果原文没有，明确说“尚未确认”。".into(),
+            evidence_en: "Cite the release scope, consent terms and availability. If the source does not say, state that it is unconfirmed.".into(),
+            counterpoint_zh: "先确认声音克隆的授权和商用限制，不要让读者以为任何人的声音都能直接复制。".into(),
+            counterpoint_en: "Check consent and commercial-use limits first; do not imply anyone's voice can be cloned freely.".into(),
+        };
+    }
+    if contains_any(
+        &haystack,
+        &[
+            "latency",
+            "gpu",
+            "inference",
+            "sagemaker",
+            "endpoint",
+            "延迟",
+            "推理",
+            "算力",
+        ],
+    ) {
+        return FallbackCreatorProfile {
+            hook_zh: format!("AI 变慢不一定是模型问题：{title_zh}，真正影响用户体验的是哪一段？"),
+            hook_en: format!(
+                "Slower AI is not always a model problem: where does user experience actually break in {title_en}?"
+            ),
+            angle_zh: "把一次真实请求拆成延迟、成本和空闲资源三段，讲清楚运维指标怎样变成用户等待和账单。".into(),
+            angle_en: "Break one real request into latency, cost and idle resources, then show how infrastructure metrics become user waiting time and bills.".into(),
+            format_zh: "60 秒录屏 + 一张延迟/成本对照卡".into(),
+            format_en: "60-second screen recording + latency/cost comparison card".into(),
+            evidence_zh: "引用原文的延迟漂移、空闲 GPU 或优化指标；如果原文没有数字，不要补造。".into(),
+            evidence_en: "Cite latency drift, idle-GPU or optimisation figures from the source. If no number exists, do not invent one.".into(),
+            counterpoint_zh: "不同业务的瓶颈不同，先看自己的请求形态，不要把一个平台的指标当成通用结论。".into(),
+            counterpoint_en: "Bottlenecks differ by workload; treat one platform's metric as a clue, not a universal conclusion.".into(),
+        };
+    }
+    if contains_any(
+        &haystack,
+        &[
+            "release",
+            "github",
+            "open source",
+            "version",
+            "migration",
+            "开源",
+            "发布",
+            "版本",
+            "迁移",
+        ],
+    ) {
+        return FallbackCreatorProfile {
+            hook_zh: format!("别只看版本号：{title_zh}，升级后最可能踩坑的是哪一步？"),
+            hook_en: format!(
+                "Don't just read the version number: where is the most likely upgrade trap in {title_en}?"
+            ),
+            angle_zh: "从一次升级或迁移出发，讲新版本解决了什么、哪些旧工作流会受影响，以及最小验证步骤。".into(),
+            angle_en: "Start from one upgrade or migration, explain what changed, which old workflows break and the smallest verification step.".into(),
+            format_zh: "3 张图文卡 + 升级检查清单".into(),
+            format_en: "3-slide carousel + upgrade checklist".into(),
+            evidence_zh: "引用 release note 中的具体变化、兼容性说明和迁移步骤；不要只复述版本号。".into(),
+            evidence_en: "Cite concrete release-note changes, compatibility notes and migration steps; do not just repeat the version number.".into(),
+            counterpoint_zh: "先确认你的部署环境和依赖是否在支持范围内，不要直接照搬别人的升级结论。".into(),
+            counterpoint_en: "Check whether your environment and dependencies are supported before copying someone else's upgrade result.".into(),
+        };
+    }
+    if contains_any(
+        &haystack,
+        &[
+            "paper",
+            "benchmark",
+            "arxiv",
+            "research",
+            "论文",
+            "榜单",
+            "评测",
+        ],
+    ) {
+        return FallbackCreatorProfile {
+            hook_zh: format!("榜单说它更强：{title_zh}，但普通用户真正该看哪一项？"),
+            hook_en: format!(
+                "The benchmark says it is stronger: what should a normal user actually check in {title_en}?"
+            ),
+            angle_zh: "把 benchmark 翻译成一个具体任务：测试条件是什么、baseline 是谁、哪些结论不能外推到真实场景。".into(),
+            angle_en: "Translate the benchmark into one concrete task: what was tested, what baseline was used, and what cannot be generalised to real use.".into(),
+            format_zh: "图文拆解 + “能说明/不能说明”双栏卡".into(),
+            format_en: "Carousel + a two-column 'what it proves / what it doesn't' card".into(),
+            evidence_zh: "引用测试集、样本量、基线或具体指标；没有数据就不要下结论。".into(),
+            evidence_en: "Cite the dataset, sample size, baseline or metric. If the data is missing, do not draw a conclusion.".into(),
+            counterpoint_zh: "榜单不等于你的场景，先确认测试条件和基线是否公平。".into(),
+            counterpoint_en: "A leaderboard is not your use case; check the test conditions and baseline before trusting it.".into(),
+        };
+    }
+    if contains_any(
+        &haystack,
+        &["price", "pricing", "cost", "价格", "费用", "成本", "降价"],
+    ) {
+        return FallbackCreatorProfile {
+            hook_zh: format!("{title_zh}：便宜了还是换了个收费方式？先算一笔自己的账。"),
+            hook_en: format!(
+                "{title_en}: did it get cheaper, or did the pricing model change? Run your own numbers."
+            ),
+            angle_zh: "拿一个真实用量估算新旧成本，讲价格变化的适用条件和隐藏成本，而不是只复述“降价”。".into(),
+            angle_en: "Use one realistic usage profile to estimate old and new cost, then explain the conditions and hidden costs behind the headline.".into(),
+            format_zh: "30 秒口播 + 成本对比表".into(),
+            format_en: "30-second video + cost comparison table".into(),
+            evidence_zh: "引用原文的价格、配额和计费口径；把地区与隐藏成本单独列出来。".into(),
+            evidence_en: "Cite the price, quota and billing rules; list regional and hidden costs separately.".into(),
+            counterpoint_zh: "注意隐藏成本、配额和地区差异，别把宣传价当成最终账单。".into(),
+            counterpoint_en: "Watch for hidden costs, quotas and regional differences; the advertised price is not the final bill.".into(),
+        };
+    }
+    if contains_any(
+        &haystack,
+        &[
+            "agent",
+            "workflow",
+            "automation",
+            "代理",
+            "工作流",
+            "自动化",
+        ],
+    ) {
+        return FallbackCreatorProfile {
+            hook_zh: format!("AI 不只是会回答：{title_zh}，它到底替人做了哪一步？"),
+            hook_en: format!(
+                "AI is not just answering anymore: which step does it actually take over in {title_en}?"
+            ),
+            angle_zh: "用一个真实工作流演示 AI 从“给建议”到“完成一步操作”的边界，并指出需要人工确认的地方。".into(),
+            angle_en: "Show one real workflow moving from advice to action, then mark the human-check points that remain.".into(),
+            format_zh: "60 秒工作流录屏 + 人工确认点".into(),
+            format_en: "60-second workflow recording + human-check points".into(),
+            evidence_zh: "引用原文中真实可执行的动作和限制；区分“演示可用”和“生产可用”。".into(),
+            evidence_en: "Cite the actions and limits shown in the source; separate demo-ready from production-ready.".into(),
+            counterpoint_zh: "先确认失败时谁负责、权限怎么收回，不要只展示成功的一次。".into(),
+            counterpoint_en: "Ask who is responsible when it fails and how permissions are revoked, not just what a successful run looks like.".into(),
+        };
+    }
+    if contains_any(
+        &haystack,
+        &["health", "medical", "compliance", "医疗", "健康", "合规"],
+    ) {
+        return FallbackCreatorProfile {
+            hook_zh: format!("{title_zh}：普通人能用什么、不能用什么？"),
+            hook_en: format!(
+                "{title_en}: what can a normal user use, and what is still off-limits?"
+            ),
+            angle_zh: "从普通用户或小团队视角讲：哪些功能能用、哪些需要资质或企业账户，以及最现实的替代方案。".into(),
+            angle_en: "From a normal-user or small-team view, explain what is usable, what needs credentials or an enterprise account, and what the realistic alternative is.".into(),
+            format_zh: "60 秒解释视频 + 适用人群清单".into(),
+            format_en: "60-second explainer + audience checklist".into(),
+            evidence_zh: "引用原文的适用地区、账户要求和合规限制；不要暗示普通账号也能直接用。".into(),
+            evidence_en: "Cite eligibility, account and compliance limits; do not imply a normal account can use it directly.".into(),
+            counterpoint_zh: "医疗和合规场景不要用演示结果替代真实审核，先说明这条内容的边界。".into(),
+            counterpoint_en: "Never replace real clinical or compliance review with a demo; state the boundary of the content explicitly.".into(),
+        };
+    }
+    FallbackCreatorProfile {
+        hook_zh: format!("别急着换工具：{title_zh}，到底改变了哪一步？"),
+        hook_en: format!(
+            "Before you switch tools: what exactly changed with {title_en}?"
+        ),
+        angle_zh: "从普通人的一个真实任务出发，先讲发生了什么，再讲这次变化到底替你省了哪一步。".into(),
+        angle_en: "Start with one real task, explain what happened, then show which step it removes from a normal workflow.".into(),
+        format_zh: "30 秒口播 + 3 张图文卡".into(),
+        format_en: "30-second video + 3-slide carousel".into(),
+        evidence_zh: "优先引用原文里的发布时间、价格或具体能力变化，不要只引用二手转述。".into(),
+        evidence_en: "Cite the release date, price or concrete capability change from the source, not a second-hand summary.".into(),
+        counterpoint_zh: "先用一个真实任务验证，不要把官方演示当成所有人的结果。".into(),
+        counterpoint_en: "Test one real task first; do not treat the official demo as everyone's result.".into(),
+    }
+}
+
 fn mock_creator_pack(top: &[&Story]) -> CreatorPack {
     CreatorPack {
         daily_theme_zh: "AI 工具正在从“回答问题”，走向“替你完成工作”。".into(),
@@ -652,36 +869,21 @@ fn mock_creator_pack(top: &[&Story]) -> CreatorPack {
             .iter()
             .take(3)
             .map(|story| {
-                let title_zh = story
-                    .title_zh
-                    .trim_end_matches(['。', '.', '？', '?', '！', '!']);
-                let title_en = story
-                    .title_en
-                    .trim_end_matches(['。', '.', '？', '?', '！', '!']);
+                let profile = fallback_creator_profile(story);
                 CreatorAngle {
                     story_id: story.id.clone(),
                     title_zh: story.title_zh.clone(),
                     title_en: story.title_en.clone(),
-                    hook_zh: format!("别急着换工具：{title_zh}，到底改变了哪一步？"),
-                    hook_en: format!(
-                        "Before you switch tools: what exactly changed with {title_en}?"
-                    ),
-                    angle_zh:
-                        "从普通人的一天出发：先讲一个具体使用场景，再解释这次更新真正改变了什么。"
-                            .into(),
-                    angle_en:
-                        "Start with one real moment in a normal workday, then explain what actually changed."
-                            .into(),
-                    format_zh: "30 秒短视频 + 3 张图文卡".into(),
-                    format_en: "30-second short video + 3-slide carousel".into(),
-                    evidence_zh: "官方发布和原文链接；可引用“发布时间 + 具体能力变化”。".into(),
-                    evidence_en:
-                        "Official announcement and source link; cite the release date and the concrete capability change."
-                            .into(),
-                    counterpoint_zh: "先用真实任务实测，不要把官方演示当成所有人的结果。".into(),
-                    counterpoint_en:
-                        "Test it on a real task first; do not treat the official demo as everyone's result."
-                            .into(),
+                    hook_zh: profile.hook_zh,
+                    hook_en: profile.hook_en,
+                    angle_zh: profile.angle_zh,
+                    angle_en: profile.angle_en,
+                    format_zh: profile.format_zh,
+                    format_en: profile.format_en,
+                    evidence_zh: profile.evidence_zh,
+                    evidence_en: profile.evidence_en,
+                    counterpoint_zh: profile.counterpoint_zh,
+                    counterpoint_en: profile.counterpoint_en,
                     source_url: story
                         .sources
                         .first()
@@ -873,6 +1075,7 @@ Use the supplied stories and their source links. Produce 2-3 angles for a creato
 - format: short video, thread, newsletter, carousel or another practical format.
 - evidence: a concrete number, quote, demo or source-backed fact. Never invent it.
 - counterpoint: what the creator must verify or the strongest opposing view.
+Each angle must be materially different in point of view and format. Do not reuse the same sentence template for every story.
 Prefer tension, before/after, cost changes, workflow changes, surprising demos, failures and unresolved debates. Never invent quotes, numbers or links."#;
 
 const CREATOR_USER: &str = "Create a source-grounded bilingual creator board for these stories.";
@@ -896,3 +1099,37 @@ Return: {"decisions":[{"story_id":"...","target_story_id":null,"relation":"same_
 When relation is same_event, set target_story_id to the primary story ID to keep."#;
 
 const MERGE_USER: &str = "Compare the candidate stories. Return one decision for every story that participates in a merge.";
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn story(id: &str, title_zh: &str, title_en: &str) -> Story {
+        Story {
+            id: id.into(),
+            title_zh: title_zh.into(),
+            title_en: title_en.into(),
+            ..Story::default()
+        }
+    }
+
+    #[test]
+    fn fallback_creator_angles_are_story_specific() {
+        let voice = story(
+            "voice",
+            "Amazon Polly 发布声音克隆",
+            "Amazon Polly launches voice cloning",
+        );
+        let infrastructure = story(
+            "infra",
+            "SageMaker 检测推理延迟漂移和空闲 GPU",
+            "SageMaker detects inference latency drift and idle GPUs",
+        );
+        let pack = mock_creator_pack(&[&voice, &infrastructure]);
+
+        assert_ne!(pack.angles[0].angle_zh, pack.angles[1].angle_zh);
+        assert_ne!(pack.angles[0].format_zh, pack.angles[1].format_zh);
+        assert!(pack.angles[0].angle_zh.contains("授权"));
+        assert!(pack.angles[1].angle_zh.contains("延迟"));
+    }
+}

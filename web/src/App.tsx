@@ -644,7 +644,10 @@ function Briefs(props: {
   const localizedBriefs = feed.briefs.filter((brief) => brief.lang === lang);
   if (selected) {
     const briefLanguage: Lang = selected.lang === "en" ? "en" : "zh";
-    const creatorPack = selected.creator_pack ?? fallbackCreatorPack(selected);
+    const creatorPack =
+      selected.creator_pack && hasVariedCreatorAngles(selected.creator_pack)
+        ? selected.creator_pack
+        : fallbackCreatorPack(selected);
     const showActionPlan =
       !!selected.action_plan &&
       (briefLanguage === "zh" ||
@@ -895,18 +898,118 @@ function fallbackCreatorPack(brief: Brief): CreatorPack {
       story_id: item.story_id,
       title_zh: item.title_zh,
       title_en: item.title_en,
-      hook_zh: `别急着换工具：${item.title_zh}，到底改变了哪一步？`,
-      hook_en: `Before switching tools: what exactly changed with ${item.title_en}?`,
-      angle_zh: "从普通人的一个真实任务出发，先讲发生了什么，再讲这次变化到底替你省了哪一步。",
-      angle_en: "Start with one real task, explain what happened, then show which step it removes from a normal workflow.",
-      format_zh: "30 秒口播 + 3 张图文卡",
-      format_en: "30-second video + 3-slide carousel",
-      evidence_zh: "优先引用原文里的发布时间、价格或具体能力变化，不要只引用二手转述。",
-      evidence_en: "Cite the release date, price or concrete capability change from the original source, not a second-hand summary.",
-      counterpoint_zh: "先用一个真实任务验证，不要把官方演示当成所有人的结果。",
-      counterpoint_en: "Test one real task first; do not treat the official demo as everyone's result.",
+      ...fallbackCreatorAngle(item),
       source_url: item.url,
     })),
+  };
+}
+
+function hasVariedCreatorAngles(pack: CreatorPack) {
+  if (pack.angles.length < 2) return true;
+  const signatures = new Set(
+    pack.angles.map((angle) => `${angle.angle_zh.trim()}|${angle.angle_en.trim()}`),
+  );
+  return signatures.size === pack.angles.length;
+}
+
+function fallbackCreatorAngle(item: Brief["sections"][number]["items"][number]) {
+  const text = `${item.title_zh} ${item.title_en} ${item.summary_zh} ${item.summary_en}`.toLowerCase();
+  const has = (terms: string[]) => terms.some((term) => text.includes(term));
+  if (has(["voice", "clone", "polly", "audio", "语音", "声音", "克隆"])) {
+    return {
+      hook_zh: `声音也能被复制了：${item.title_zh}，品牌和创作者先该检查什么？`,
+      hook_en: `Voices can now be cloned: what should brands and creators check first with ${item.title_en}?`,
+      angle_zh: "用同一段脚本做三方对比：真人录音、普通 TTS、声音克隆。重点讲授权、辨识度和品牌风险，而不是只展示“像不像”。",
+      angle_en: "Compare the same script across a real recording, standard TTS and a cloned voice. Focus on consent, recognisability and brand risk.",
+      format_zh: "60 秒三方对比 + 授权检查清单",
+      format_en: "60-second comparison + consent checklist",
+      evidence_zh: "引用原文的发布范围、授权条款和可用地区；如果原文没有，明确说“尚未确认”。",
+      evidence_en: "Cite the release scope, consent terms and availability. If the source does not say, state that it is unconfirmed.",
+      counterpoint_zh: "先确认声音克隆的授权和商用限制，不要让读者以为任何人的声音都能直接复制。",
+      counterpoint_en: "Check consent and commercial-use limits first; do not imply anyone's voice can be cloned freely.",
+    };
+  }
+  if (has(["latency", "gpu", "inference", "sagemaker", "endpoint", "延迟", "推理", "算力"])) {
+    return {
+      hook_zh: `AI 变慢不一定是模型问题：${item.title_zh}，真正影响用户体验的是哪一段？`,
+      hook_en: `Slower AI is not always a model problem: where does user experience actually break in ${item.title_en}?`,
+      angle_zh: "把一次真实请求拆成延迟、成本和空闲资源三段，讲清楚运维指标怎样变成用户等待和账单。",
+      angle_en: "Break one real request into latency, cost and idle resources, then show how infrastructure metrics become waiting time and bills.",
+      format_zh: "60 秒录屏 + 一张延迟/成本对照卡",
+      format_en: "60-second screen recording + latency/cost card",
+      evidence_zh: "引用原文的延迟漂移、空闲 GPU 或优化指标；如果原文没有数字，不要补造。",
+      evidence_en: "Cite latency drift, idle-GPU or optimisation figures from the source. If no number exists, do not invent one.",
+      counterpoint_zh: "不同业务的瓶颈不同，先看自己的请求形态，不要把一个平台的指标当成通用结论。",
+      counterpoint_en: "Bottlenecks differ by workload; treat one platform's metric as a clue, not a universal conclusion.",
+    };
+  }
+  if (has(["release", "github", "open source", "version", "migration", "开源", "发布", "版本", "迁移"])) {
+    return {
+      hook_zh: `别只看版本号：${item.title_zh}，升级后最可能踩坑的是哪一步？`,
+      hook_en: `Don't just read the version number: where is the most likely upgrade trap in ${item.title_en}?`,
+      angle_zh: "从一次升级或迁移出发，讲新版本解决了什么、哪些旧工作流会受影响，以及最小验证步骤。",
+      angle_en: "Start from one upgrade or migration, explain what changed, which old workflows break and the smallest verification step.",
+      format_zh: "3 张图文卡 + 升级检查清单",
+      format_en: "3-slide carousel + upgrade checklist",
+      evidence_zh: "引用 release note 中的具体变化、兼容性说明和迁移步骤；不要只复述版本号。",
+      evidence_en: "Cite concrete release-note changes, compatibility notes and migration steps; do not just repeat the version number.",
+      counterpoint_zh: "先确认你的部署环境和依赖是否在支持范围内，不要直接照搬别人的升级结论。",
+      counterpoint_en: "Check whether your environment and dependencies are supported before copying someone else's upgrade result.",
+    };
+  }
+  if (has(["paper", "benchmark", "arxiv", "research", "论文", "榜单", "评测"])) {
+    return {
+      hook_zh: `榜单说它更强：${item.title_zh}，但普通用户真正该看哪一项？`,
+      hook_en: `The benchmark says it is stronger: what should a normal user actually check in ${item.title_en}?`,
+      angle_zh: "把 benchmark 翻译成一个具体任务：测试条件是什么、baseline 是谁、哪些结论不能外推到真实场景。",
+      angle_en: "Translate the benchmark into one concrete task: what was tested, what baseline was used, and what cannot be generalised.",
+      format_zh: "图文拆解 + “能说明/不能说明”双栏卡",
+      format_en: "Carousel + a two-column 'what it proves / what it doesn't' card",
+      evidence_zh: "引用测试集、样本量、基线或具体指标；没有数据就不要下结论。",
+      evidence_en: "Cite the dataset, sample size, baseline or metric. If the data is missing, do not draw a conclusion.",
+      counterpoint_zh: "榜单不等于你的场景，先确认测试条件和基线是否公平。",
+      counterpoint_en: "A leaderboard is not your use case; check the test conditions and baseline before trusting it.",
+    };
+  }
+  if (has(["price", "pricing", "cost", "价格", "费用", "成本", "降价"])) {
+    return {
+      hook_zh: `${item.title_zh}：便宜了还是换了个收费方式？先算一笔自己的账。`,
+      hook_en: `${item.title_en}: did it get cheaper, or did the pricing model change? Run your own numbers.`,
+      angle_zh: "拿一个真实用量估算新旧成本，讲价格变化的适用条件和隐藏成本，而不是只复述“降价”。",
+      angle_en: "Use one realistic usage profile to estimate old and new cost, then explain the conditions and hidden costs behind the headline.",
+      format_zh: "30 秒口播 + 成本对比表",
+      format_en: "30-second video + cost comparison table",
+      evidence_zh: "引用原文的价格、配额和计费口径；把地区与隐藏成本单独列出来。",
+      evidence_en: "Cite the price, quota and billing rules; list regional and hidden costs separately.",
+      counterpoint_zh: "注意隐藏成本、配额和地区差异，别把宣传价当成最终账单。",
+      counterpoint_en: "Watch for hidden costs, quotas and regional differences; the advertised price is not the final bill.",
+    };
+  }
+  if (has(["agent", "workflow", "automation", "代理", "工作流", "自动化"])) {
+    return {
+      hook_zh: `AI 不只是会回答：${item.title_zh}，它到底替人做了哪一步？`,
+      hook_en: `AI is not just answering anymore: which step does it actually take over in ${item.title_en}?`,
+      angle_zh: "用一个真实工作流演示 AI 从“给建议”到“完成一步操作”的边界，并指出需要人工确认的地方。",
+      angle_en: "Show one real workflow moving from advice to action, then mark the human-check points that remain.",
+      format_zh: "60 秒工作流录屏 + 人工确认点",
+      format_en: "60-second workflow recording + human-check points",
+      evidence_zh: "引用原文中真实可执行的动作和限制；区分“演示可用”和“生产可用”。",
+      evidence_en: "Cite the actions and limits shown in the source; separate demo-ready from production-ready.",
+      counterpoint_zh: "先确认失败时谁负责、权限怎么收回，不要只展示成功的一次。",
+      counterpoint_en: "Ask who is responsible when it fails and how permissions are revoked, not just what a successful run looks like.",
+    };
+  }
+  return {
+    hook_zh: `别急着换工具：${item.title_zh}，到底改变了哪一步？`,
+    hook_en: `Before switching tools: what exactly changed with ${item.title_en}?`,
+    angle_zh: "从普通人的一个真实任务出发，先讲发生了什么，再讲这次变化到底替你省了哪一步。",
+    angle_en: "Start with one real task, explain what happened, then show which step it removes from a normal workflow.",
+    format_zh: "30 秒口播 + 3 张图文卡",
+    format_en: "30-second video + 3-slide carousel",
+    evidence_zh: "优先引用原文里的发布时间、价格或具体能力变化，不要只引用二手转述。",
+    evidence_en: "Cite the release date, price or concrete capability change from the source, not a second-hand summary.",
+    counterpoint_zh: "先用一个真实任务验证，不要把官方演示当成所有人的结果。",
+    counterpoint_en: "Test one real task first; do not treat the official demo as everyone's result.",
   };
 }
 

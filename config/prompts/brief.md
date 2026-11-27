@@ -31,6 +31,7 @@ Creator pack:
   - `counterpoint`: what the creator must verify or the strongest opposing view;
   - `source_url`: the original source.
 - Prefer tension, before/after, cost changes, workflow changes, surprising demos, failures and unresolved debates.
+- Each angle must be materially different in point of view and format; do not reuse one generic sentence for every story.
 - Do not invent quotes, numbers or links.
 
 Use at most twelve top signals and omit sections without evidence.
