@@ -1,7 +1,7 @@
 {
   "name": "ainews-web",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Po Radar dashboard for the ainews intelligence pipeline",
   "license": "MIT",
   "type": "module",

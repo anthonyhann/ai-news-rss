@@ -4,6 +4,7 @@
 
 [![CI](https://github.com/anthonyhann/ai-news-rss/actions/workflows/ci.yml/badge.svg)](https://github.com/anthonyhann/ai-news-rss/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-0.2.0-cd6f49.svg)](Cargo.toml)
 [![Rust](https://img.shields.io/badge/Rust-1.98.1-orange.svg)](rust-toolchain.toml)
 [![React](https://img.shields.io/badge/React-19-149eca.svg)](web/package.json)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -22,6 +23,15 @@ traceable path back to the original source.
 > which covers secrets, sources, verification, and troubleshooting in order.
 
 ![Po Radar dashboard](docs/assets/dashboard.png)
+
+## What's New in 0.2.0
+
+- **Daily creator board**: turns the strongest signals into three publishable ideas, each with a hook, distinct angle, format, evidence, counterpoint and source link.
+- **Plain-language layer**: every brief answers what happened, what it means for you and what you can try today, with jargon explained inline.
+- **Stronger delivery**: the creator board and plain-language layer flow into the web app, Feishu, WeCom, DingTalk, Telegram and one merged bilingual email.
+- **Resilient digest**: model timeout and retry settings are configurable; failed action or brief generation falls back to a deterministic report instead of stopping the day.
+- **Varied fallbacks**: when the model is unavailable, creator angles still differ by story type, including voice cloning, inference infrastructure, open-source upgrades, research, pricing and agent workflows.
+- **Reliable Pages deployment**: pushes to `main` materialize every brief from the `state` branch and wait for the Pages artifact before deployment.
 
 ## Meet Po
 
@@ -62,6 +72,8 @@ GitHub, Telegram, WeChat RSS bridges, and newsletters. Most aggregators stop at
   signal, and actionability produce a 0–100 score.
 - **Bilingual output:** titles, summaries, and briefs are produced in Chinese
   and English.
+- **Creator inspiration:** each signal becomes a concrete angle, hook, format,
+  evidence block and counterpoint for AI bloggers and creators.
 - **Action, not just reading:** a Tree-of-Thoughts planner proposes one top
   action, two experiments, and one watchlist item.
 - **Portable state:** SQLite works locally, in Docker, and in a single-commit
@@ -75,6 +87,7 @@ GitHub, Telegram, WeChat RSS bridges, and newsletters. Most aggregators stop at
 | Deduplication | canonical URLs, SHA-256 content hashes, SimHash buckets, title Jaccard, model event merge |
 | Scoring | 0–100 editorial rubric with hard caps for non-AI, rumors, missing links, and stale content |
 | Briefs | Plain-language Chinese and English editions plus a creator board: each idea includes a hook, distinct angle, format, evidence and counterpoint |
+| Resilience | Configurable model timeout/retries, deterministic digest fallback, and story-specific creator angles when the model is unavailable |
 | Action plan | Tree-of-Thoughts generates 3–5 candidates ranked by impact, feasibility, speed and confidence; score summaries are visible in the brief |
 | Alerts | score ≥ 90, confidence ≥ 0.80, 24-hour story deduplication, optional material follow-ups |
 | Delivery | WeCom, Feishu, DingTalk, Telegram, email, web publication |
@@ -131,7 +144,10 @@ Score: 0–100 editorial rubric + deterministic hard caps
         └── score ≥ 90 + confidence ≥ 0.80 → alert
         │
         ▼
-Editor model → Chinese/English brief + Tree-of-Thoughts action plan
+Editor model → plain-language brief + creator board + Tree-of-Thoughts action plan
+        │
+        ├── model timeout → deterministic fallback brief + varied creator board
+        └── success → real-model bilingual brief
         │
         ▼
 SQLite → static JSON / Pages / axum API / WeCom / Feishu / DingTalk / Telegram / email
@@ -501,8 +517,9 @@ failure; it does not block RSS/HN/Reddit/GitHub collection.
   materializes every brief JSON file, and deploys Pages on pushes to `main`.
 - `.github/workflows/collect.yml` collects and scores every two hours, then
   builds and deploys the static dashboard.
-- `.github/workflows/digest.yml` generates Chinese/English briefs at 08:20 and
-  20:20 Asia/Shanghai.
+- `.github/workflows/digest.yml` generates Chinese/English briefs, action plans
+  and a creator board at 08:20 and 20:20 Asia/Shanghai. A model timeout falls
+  back to a deterministic report and still deploys.
 
 Run a single-source smoke test, for example X only:
 

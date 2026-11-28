@@ -4,6 +4,7 @@
 
 [![CI](https://github.com/anthonyhann/ai-news-rss/actions/workflows/ci.yml/badge.svg)](https://github.com/anthonyhann/ai-news-rss/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-0.2.0-cd6f49.svg)](Cargo.toml)
 [![Rust](https://img.shields.io/badge/Rust-1.98.1-orange.svg)](rust-toolchain.toml)
 [![React](https://img.shields.io/badge/React-19-149eca.svg)](web/package.json)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -14,6 +15,15 @@ Po Radar 是一个自托管的 AI 情报台，由原创陪伴角色 **Po** 担�
 > 第一次部署建议直接阅读 [配置 SOP](#配置-sop)，按顺序完成密钥、信源、验收和排障。
 
 ![Po Radar dashboard](docs/assets/dashboard.png)
+
+## 0.2.0 更新
+
+- **每日创作板**：从当日高分信号中提炼 3 个可直接开写的选题，每个选题包含开头钩子、独特角度、适合形式、可引用素材、反方提醒和原始链接。
+- **普通人解读层**：简报统一回答“发生了什么、这跟你有什么关系、今天可以怎么用”，技术术语在首次出现时用日常语言解释。
+- **更强的分发能力**：创作板和解读层同时进入网页、飞书、企业微信、钉钉、Telegram 和邮件；邮件为单封中英合并版。
+- **日报容错**：模型请求超时时间与重试次数可配置；行动建议或简报生成失败时自动降级为确定性模板，避免整天断更。
+- **降级也有差异**：模型不可用时，创作板仍会按声音克隆、推理基础设施、开源升级、论文评测、价格变化和 Agent 工作流等类型生成不同角度。
+- **Pages 可靠部署**：推送到 `main` 后自动从 `state` 分支物化全部简报并部署，部署前会等待 Pages artifact 可见。
 
 ## 陪伴角色 Po
 
@@ -39,6 +49,7 @@ AI 信息散落在实验室博客、X、YouTube、Reddit、Hacker News、GitHub�
 - **再做模型事件合并**：由模型判断 `same_event`、`follow_up`、`different_event`，避免把同一发布拆成多条。
 - **主编评分**：相关性、影响力、新颖度、可信度、社区热度、可行动性共同形成 0–100 分。
 - **双语简报**：标题、摘要和每日简报同时生成中文与英文版本。
+- **创作灵感**：每条高信号信息提炼可写角度、钩子、形式、证据和反方提醒，直接服务 AI 博主与内容创作者。
 - **输出行动**：用 Tree-of-Thoughts 生成今日 Top 1 行动、两个实验和一个观察项。
 - **状态可迁移**：SQLite 既能本地运行，也能在 Docker 里运行，还能通过 GitHub Actions 的 `state` 分支保存。
 
@@ -50,6 +61,7 @@ AI 信息散落在实验室博客、X、YouTube、Reddit、Hacker News、GitHub�
 | 去重 | 规范化 URL、SHA-256 内容哈希、SimHash 分桶、标题 Jaccard、模型事件合并 |
 | 评分 | 0–100 编辑评分，含非 AI、传言、无原文链接、过期内容的硬上限 |
 | 简报 | 面向普通 AI 用户的中英双语解读 + 每日创作板：发生了什么、跟你有什么关系、今天可以怎么用；每个选题附钩子、独特角度、适合形式、可引用素材和反方提醒 |
+| 容错 | 模型超时/重试可配置，Digest 失败时自动降级生成；创作板按新闻类型生成差异化角度 |
 | 行动 | 思维树生成 3–5 个候选行动，按影响、可行性、见效速度、置信度选择；候选评分在简报中公开可见 |
 | 告警 | ≥90 分、置信度 ≥0.80、24 小时故事去重，支持实质性更新 |
 | 推送 | 企业微信、飞书、钉钉、Telegram、邮件、网页发布 |
@@ -98,7 +110,10 @@ Score：0–100 编辑评分 + 确定性硬上限
         └── ≥90 分且置信度 ≥0.80 → 即时告警
         │
         ▼
-Editor model → 中英双语简报 + 思维树行动建议
+Editor model → 人话解读 + 每日创作板 + 思维树行动建议
+        │
+        ├── 模型超时 → 确定性降级简报与差异化创作板
+        └── 正常完成 → 真实模型双语简报
         │
         ▼
 SQLite → 静态 JSON / Pages / axum API / 企业微信 / 飞书 / 钉钉 / Telegram / 邮件
@@ -415,7 +430,7 @@ X 的自动化规则和风控会变化。生产环境建议使用专用小号或
 - `.github/workflows/ci.yml`：fmt、clippy、test、前端构建、worker 语法检查。
 - `.github/workflows/deploy.yml`：代码推送到 `main` 后从 `state` 分支恢复 SQLite，重新物化全部简报 JSON 并部署 Pages。
 - `.github/workflows/collect.yml`：每 2 小时采集 + 评分，然后构建并部署静态站。
-- `.github/workflows/digest.yml`：北京时间 08:20 / 20:20 生成中英双语简报和行动建议。
+- `.github/workflows/digest.yml`：北京时间 08:20 / 20:20 生成中英双语简报、行动建议和每日创作板；模型超时会降级并继续部署。
 
 手动做单源 Smoke Test（例如只验证 X）：
 
